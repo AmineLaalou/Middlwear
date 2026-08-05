@@ -22,6 +22,14 @@ const PRODUCTS = [
     price:3999, perf:34, specs:["11\" FHD+","Stylet inclus","128 Go"], badge:"Nouveau", rating:4.4, added:"2026-07-11" },
   { id:"co-08", name:"Orbex Pad Lite", brand:"Orbex", category:"ordinateurs", icon:"tablet",
     price:2499, perf:16, specs:["10.1\" HD","4 Go RAM","64 Go"], rating:3.8, added:"2025-12-14" },
+  { id:"co-09", name:"HP Pavilion 15", brand:"HP", category:"ordinateurs", icon:"laptop",
+    price:6800, perf:44, specs:["15.6\" FHD","Core i5, 8 Go RAM","512 Go SSD"], rating:4.3, added:"2026-05-28" },
+  { id:"co-10", name:"HP EliteBook 840", brand:"HP", category:"ordinateurs", icon:"laptop",
+    price:11500, perf:71, specs:["14\" FHD","Core i7, 16 Go RAM","512 Go SSD"], badge:"Best-seller", rating:4.6, added:"2026-06-30" },
+  { id:"co-11", name:"Dell Inspiron 15", brand:"Dell", category:"ordinateurs", icon:"laptop",
+    price:6500, perf:41, specs:["15.6\" FHD","Core i5, 8 Go RAM","256 Go SSD"], rating:4.2, added:"2026-04-15" },
+  { id:"co-12", name:"Dell XPS 13", brand:"Dell", category:"ordinateurs", icon:"laptop",
+    price:15500, perf:90, specs:["13.4\" QHD+","Core i7, 16 Go RAM","1 To SSD"], badge:"Nouveau", rating:4.8, added:"2026-07-25" },
 
   // ───────────── CONNECTÉ ─────────────
   { id:"cn-01", name:"Halcyon Pulse Watch 5", brand:"Halcyon", category:"connecte", icon:"watch",
@@ -44,6 +52,12 @@ const PRODUCTS = [
     price:1299, perf:56, specs:["Léger 38g","Appels mains-libres","Autonomie 4h"], rating:3.9, added:"2026-01-30" },
   { id:"cn-10", name:"Vantix Focus AR", brand:"Vantix", category:"connecte", icon:"glasses",
     price:2999, perf:94, specs:["Affichage AR intégré","Notifications","Autonomie 3h"], badge:"Best-seller", rating:4.5, added:"2026-06-28" },
+  { id:"cn-11", name:"Samsung Galaxy Watch 6", brand:"Samsung", category:"connecte", icon:"watch",
+    price:2800, perf:73, specs:["AMOLED 1.5\"","GPS + ECG","Autonomie 40h"], badge:"Best-seller", rating:4.6, added:"2026-06-18" },
+  { id:"cn-12", name:"Apple Watch SE", brand:"Apple", category:"connecte", icon:"watch",
+    price:3600, perf:68, specs:["Écran Retina","GPS","Autonomie 18h"], rating:4.6, added:"2026-05-09" },
+  { id:"cn-13", name:"Apple Watch Series 10", brand:"Apple", category:"connecte", icon:"watch",
+    price:5200, perf:89, specs:["AMOLED toujours actif","ECG + SpO2","Autonomie 18h"], badge:"Nouveau", rating:4.8, added:"2026-07-30" },
 
   // ───────────── GADGETS ─────────────
   { id:"ga-01", name:"Solen Air Buds Pro", brand:"Solen", category:"gadgets", icon:"earbuds",
