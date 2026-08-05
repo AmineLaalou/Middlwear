@@ -2,15 +2,20 @@
 
 Deux modes possibles, voir `README.md` pour le détail :
 
-- **Mode statique** (options A/B/C ci-dessous) : pas de serveur, pas de
-  compte utilisateur. C'est ce que ce guide couvre en premier.
-- **Mode complet** (comptes, authentification, connexion sociale) :
-  nécessite un hébergeur qui fait tourner du Node.js — voir la section
-  "Mettre en ligne le mode complet" tout en bas.
+- **Mode statique** (niveaux 1 à 3 ci-dessous) : pas de serveur, pas de
+  compte utilisateur.
+- **Mode complet** (niveaux 4 et 5) : comptes, authentification, connexion
+  sociale — nécessite un hébergeur qui fait tourner du Node.js en continu.
+
+Classement du plus simple au plus complexe. **Toutes les options listées
+sont gratuites**, sans carte bancaire requise pour démarrer (précision
+donnée option par option ci-dessous).
 
 ---
 
-## Option A — Netlify Drop (le plus rapide, ~1 minute)
+## Niveau 1 — Netlify Drop (le plus rapide, ~1 minute, mode statique)
+
+Aucun compte requis pour publier (juste pour garder le lien).
 
 1. Décompresse le zip. Tu dois avoir un dossier `middlwear/` contenant
    `index.html`, `css/`, `js/`, `assets/`.
@@ -24,7 +29,10 @@ sous-domaine en `middlwear.netlify.app` si c'est libre.
 
 ---
 
-## Option B — Cloudflare Pages (meilleure vitesse depuis le Maroc)
+## Niveau 2 — Cloudflare Pages (mode statique, meilleure vitesse depuis le Maroc)
+
+Nécessite de créer un compte gratuit avant de publier (léger cran de plus
+que Netlify Drop).
 
 1. Crée un compte gratuit sur **https://pages.cloudflare.com**
 2. *Create a project* → *Direct Upload*
@@ -33,7 +41,10 @@ sous-domaine en `middlwear.netlify.app` si c'est libre.
 
 ---
 
-## Option C — GitHub Pages (si tu veux versionner)
+## Niveau 3 — GitHub Pages (mode statique, si tu veux versionner)
+
+Demande de savoir utiliser `git` en ligne de commande — plus technique que
+les deux niveaux précédents, mais donne un historique de versions.
 
 ### 1. Prérequis
 - Un compte sur **https://github.com** (gratuit)
@@ -82,14 +93,17 @@ git push
 
 ---
 
-## Points de vigilance
+## Points de vigilance (niveaux 1 à 3)
 
 - **`index.html` doit être à la racine** de ce que tu uploades, pas dans un
   sous-dossier. Sinon la page d'accueil ne s'affichera pas.
-- **N'oublie pas le dossier `assets/`** : c'est lui qui contient le logo.
+- **N'oublie pas le dossier `assets/`** : c'est lui qui contient le logo et
+  les photos produits.
 - `run.sh` et `run.bat` ne servent qu'en local. Tu peux les laisser, ils
   seront simplement ignorés en ligne.
 - Après une mise à jour, fais `Ctrl + F5` pour contourner le cache.
+- En mode statique, le bouton "Se connecter" reste visible mais inactif
+  (pas de backend à contacter) — voir niveaux 4/5 pour l'activer.
 
 ## Rappel important
 Le tunnel de paiement reste une **maquette**, même en mode complet (comptes
@@ -100,14 +114,15 @@ scope de ce site pour l'instant.
 
 ---
 
-## Mettre en ligne le mode complet (comptes + authentification)
+## Niveau 4 — Render.com (mode complet : comptes + authentification)
 
-Contrairement au mode statique, ceci nécessite un hébergeur qui exécute du
-**Node.js** en continu (Netlify Drop / GitHub Pages ne suffisent plus).
+Plus complexe que les niveaux 1 à 3 car il faut faire tourner un vrai
+serveur Node.js en continu (pas juste des fichiers statiques). C'est
+l'option la plus simple parmi celles qui le permettent gratuitement, sans
+carte bancaire.
 
-### Option recommandée — Render.com (gratuit)
-1. Pousse le dossier `middlwear/` (avec `server/`) sur GitHub — voir Option C
-   plus haut si ce n'est pas déjà fait.
+1. Pousse le dossier `middlwear/` (avec `server/`) sur GitHub — voir
+   Niveau 3 plus haut si ce n'est pas déjà fait.
 2. Sur **https://render.com** → *New* → *Web Service* → connecte le repo.
 3. Réglages :
    - **Root Directory** : `server`
@@ -121,15 +136,31 @@ Contrairement au mode statique, ceci nécessite un hébergeur qui exécute du
    chez Google/Meta en conséquence.
 5. Déploie. Le site (statique + comptes) est servi depuis la même URL.
 
-**Limite à connaître** : sur le plan gratuit de Render (comme la plupart des
-hébergeurs gratuits), le système de fichiers est effacé à chaque redéploiement
-ou redémarrage — la base SQLite (`server/data/middlwear.sqlite`) repart donc
-de zéro à ce moment-là. Pour une vraie persistance en production, il faudra
-migrer vers une base hébergée (ex. PostgreSQL gratuit sur Render/Railway/
-Supabase) — une évolution à prévoir plus tard, pas bloquante pour tester le
-site avec de vrais comptes aujourd'hui.
+**Limites à connaître** :
+- Sur le plan gratuit, le service **s'endort après une quinzaine de minutes
+  sans visite** et met quelques dizaines de secondes à se réveiller à la
+  requête suivante — normal, pas un bug.
+- Le système de fichiers est effacé à chaque redéploiement ou redémarrage —
+  la base SQLite (`server/data/middlwear.sqlite`) repart donc de zéro à ce
+  moment-là. Pour une vraie persistance en production, il faudra migrer vers
+  une base hébergée (ex. PostgreSQL gratuit sur Render/Supabase) — une
+  évolution à prévoir plus tard, pas bloquante pour tester le site avec de
+  vrais comptes aujourd'hui.
 
-### Alternatives équivalentes
-**Railway** (railway.app) et **Fly.io** (fly.io) fonctionnent sur le même
-principe : connecter le repo GitHub, pointer vers `server/`, définir les
-variables d'environnement, déployer. Les trois ont un palier gratuit.
+---
+
+## Niveau 5 — Railway / Fly.io (mode complet, alternatives à Render)
+
+Même principe et même niveau de complexité que Render (connecter le repo
+GitHub, pointer vers `server/`, définir les variables d'environnement,
+déployer). Classées après Render ici parce que leurs offres gratuites ont
+changé plusieurs fois ces dernières années et sont moins prévisibles dans
+la durée — **vérifie les conditions actuelles au moment de déployer**
+(crédit d'essai limité, carte bancaire parfois demandée en vérification
+sans être débitée, etc.) :
+- **Railway** — https://railway.app
+- **Fly.io** — https://fly.io
+
+Si l'un des deux exige une carte bancaire ou un palier payant au moment où
+tu regardes, reste sur Render (niveau 4), qui n'en a pas demandé au moment
+de la rédaction de ce guide.
