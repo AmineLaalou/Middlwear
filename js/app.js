@@ -1,0 +1,454 @@
+(() => {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+  const body = document.body;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ============ INTRO ============ */
+  const intro = $("intro");
+  const app = $("app");
+  let introDone = false;
+
+  function endIntro() {
+    if (introDone) return;
+    introDone = true;
+    intro.classList.add("hidden");
+    body.classList.remove("intro-active");
+    app.classList.add("visible");
+    setTimeout(() => {
+      intro.remove();
+      MWVisuals.initReveal();
+    }, 720);
+  }
+  body.classList.add("intro-active");
+  const introTimer = setTimeout(endIntro, reduced ? 0 : 3100);
+  $("skip").addEventListener("click", () => { clearTimeout(introTimer); endIntro(); });
+  if (reduced) endIntro();
+
+  /* ============ CONSTANTES ============ */
+  const BUDGET_MAX = 18000;
+  const FREE_SHIP = 500;
+  const SHIP_COST = 39;
+
+  const CATS = {
+    all: "Tous",
+    ordinateurs: "Ordinateurs",
+    connecte: "Connecté",
+    gadgets: "Gadgets",
+    mobilite: "Mobilité"
+  };
+
+  const BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+  const fmt = (n) => n.toLocaleString("fr-FR") + " Dh";
+
+  /* ============ ÉTAT ============ */
+  const state = {
+    q: "",
+    cat: "all",
+    budget: BUDGET_MAX,
+    axis: 50,        // 0 = économique, 100 = performance
+    axisTouched: false,
+    sort: "smart"
+  };
+  const cart = {};
+
+  /* ============ AXE ÉCONOMIQUE ⇄ PERFORMANCE ============ */
+  /* Le curseur ne coupe pas brutalement le catalogue : il repondère.
+     À gauche on privilégie le rapport qualité/prix (perf élevée pour un prix bas),
+     à droite la performance brute. Le score sert au tri, et un seuil doux
+     écarte les produits vraiment hors sujet quand on pousse aux extrêmes. */
+
+  const MAX_PRICE = Math.max(...PRODUCTS.map((p) => p.price));
+
+  function axisScore(p) {
+    const a = state.axis / 100;                 // 0 → éco, 1 → perf
+    const perfN = p.perf / 100;                 // 0..1
+    const cheapN = 1 - p.price / MAX_PRICE;     // 1 = très abordable
+    const value = perfN * 0.55 + cheapN * 0.45; // rapport qualité/prix
+    // pondération continue entre "bon plan" et "performance pure"
+    return (1 - a) * (cheapN * 0.6 + value * 0.4) + a * (perfN * 0.85 + value * 0.15);
+  }
+
+  function axisLabel() {
+    const v = state.axis;
+    if (v <= 12) return ["Priorité au prix", "les options les plus abordables d'abord"];
+    if (v <= 32) return ["Bon plan", "meilleur rapport qualité/prix"];
+    if (v <= 46) return ["Équilibré, penché budget", "de bonnes specs sans exploser le budget"];
+    if (v <= 54) return ["Équilibré", "compromis prix / performance"];
+    if (v <= 68) return ["Équilibré, penché perfs", "on monte en gamme sans viser le sommet"];
+    if (v <= 88) return ["Performance", "les configurations les plus solides"];
+    return ["Performance maximale", "le haut du panier, sans compromis"];
+  }
+
+  function updateAxisUI() {
+    const [title, sub] = axisLabel();
+    $("axis-caption").innerHTML = `<b>${title}</b> — ${sub}`;
+    const a = state.axis;
+    $("end-eco").classList.toggle("dim", a > 62);
+    $("end-perf").classList.toggle("dim", a < 38);
+
+    // la couleur du curseur suit la position
+    const mix = a / 100;
+    const thumb = mix < 0.5 ? "#22f0c4" : "#8b7cff";
+    document.documentElement.style.setProperty("--axis-thumb", thumb);
+    const slider = $("axis");
+    slider.style.setProperty("--c", thumb);
+  }
+
+  /* ============ FILTRAGE ============ */
+  function compute() {
+    let list = PRODUCTS.filter((p) => {
+      const okQ = !state.q || (p.name + " " + p.brand + " " + p.specs.join(" ")).toLowerCase().includes(state.q);
+      const okC = state.cat === "all" || p.category === state.cat;
+      const okB = p.price <= state.budget;
+      return okQ && okC && okB;
+    });
+
+    // Aux extrémités du curseur, on écarte doucement les produits hors sujet
+    if (state.axisTouched) {
+      if (state.axis >= 85) list = list.filter((p) => p.perf >= 55);
+      else if (state.axis <= 15) {
+        const median = [...list].sort((a, b) => a.price - b.price)[Math.floor(list.length / 2)];
+        if (median) list = list.filter((p) => p.price <= median.price * 1.6);
+      }
+    }
+
+    switch (state.sort) {
+      case "price-asc": list.sort((a, b) => a.price - b.price); break;
+      case "price-desc": list.sort((a, b) => b.price - a.price); break;
+      case "newest": list.sort((a, b) => new Date(b.added) - new Date(a.added)); break;
+      default: list.sort((a, b) => axisScore(b) - axisScore(a)); break;
+    }
+    return list;
+  }
+
+  /* ============ RENDU GRILLE ============ */
+  function cardHTML(p, i) {
+    const badge = p.badge
+      ? `<span class="badge ${p.badge.toLowerCase().replace(/\s+/g, "-").replace("é", "e")}">${p.badge}</span>` : "";
+    const old = p.oldPrice ? `<span class="pold">${fmt(p.oldPrice)}</span>` : "";
+    return `
+      <article class="card" data-tilt="8" style="animation-delay:${Math.min(i * 38, 340)}ms">
+        ${badge}
+        <div class="card-ic">${PRODUCT_ICONS[p.icon] || ""}</div>
+        <div class="card-cat">${CATS[p.category] || p.category}</div>
+        <div class="card-brand">${p.brand}</div>
+        <h3 class="card-name">${p.name}</h3>
+        <div class="perf-bar">
+          <div class="pt"><div class="pf" data-w="${p.perf}"></div></div>
+          <span>PERF ${p.perf}</span>
+        </div>
+        <div class="specs">${p.specs.map((s) => `<span>${s}</span>`).join("")}</div>
+        <div class="card-foot">
+          <div class="pblock"><span class="pnow">${fmt(p.price)}</span>${old}</div>
+          <button class="add" type="button" data-add="${p.id}">${ICONS.cart}Ajouter</button>
+        </div>
+      </article>`;
+  }
+
+  const grid = $("grid");
+
+  function render() {
+    const res = compute();
+    $("count").innerHTML = `<strong>${res.length}</strong> article${res.length !== 1 ? "s" : ""}`;
+
+    if (!res.length) {
+      grid.innerHTML = `
+        <div class="empty">
+          ${ICONS.empty}
+          <h3>Aucun article ne correspond</h3>
+          <p>Essayez d'élargir le budget, de changer de catégorie ou de recentrer le curseur.</p>
+          <button type="button" id="ereset">Réinitialiser</button>
+        </div>`;
+      $("ereset").addEventListener("click", reset);
+      return;
+    }
+
+    grid.innerHTML = res.map(cardHTML).join("");
+    requestAnimationFrame(() => {
+      grid.querySelectorAll(".card").forEach((c) => c.classList.add("in"));
+      grid.querySelectorAll(".pf").forEach((b) => { b.style.width = b.dataset.w + "%"; });
+      MWVisuals.bindTilt(grid);
+    });
+  }
+
+  /* ============ CONTRÔLES ============ */
+  let deb;
+  $("q").addEventListener("input", (e) => {
+    clearTimeout(deb);
+    const v = e.target.value;
+    deb = setTimeout(() => { state.q = v.trim().toLowerCase(); render(); }, 150);
+  });
+
+  $("chips").addEventListener("click", (e) => {
+    const c = e.target.closest(".chip");
+    if (!c) return;
+    $("chips").querySelectorAll(".chip").forEach((x) => x.classList.remove("on"));
+    c.classList.add("on");
+    state.cat = c.dataset.cat;
+    render();
+  });
+
+  $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+
+  const axisEl = $("axis");
+  axisEl.addEventListener("input", (e) => {
+    state.axis = Number(e.target.value);
+    state.axisTouched = true;
+    if (state.sort !== "smart") { state.sort = "smart"; $("sort").value = "smart"; }
+    updateAxisUI();
+    render();
+  });
+
+  const budgetEl = $("budget");
+  function updateBudgetUI() {
+    $("bfill").style.width = (state.budget / BUDGET_MAX) * 100 + "%";
+    $("bval").textContent = state.budget >= BUDGET_MAX ? `Jusqu'à ${fmt(BUDGET_MAX)}+` : `Jusqu'à ${fmt(state.budget)}`;
+  }
+  budgetEl.addEventListener("input", (e) => {
+    state.budget = Number(e.target.value);
+    updateBudgetUI();
+    render();
+  });
+
+  function reset() {
+    Object.assign(state, { q: "", cat: "all", budget: BUDGET_MAX, axis: 50, axisTouched: false, sort: "smart" });
+    $("q").value = "";
+    $("sort").value = "smart";
+    budgetEl.value = BUDGET_MAX;
+    axisEl.value = 50;
+    $("chips").querySelectorAll(".chip").forEach((x) => x.classList.remove("on"));
+    $("chips").querySelector('[data-cat="all"]').classList.add("on");
+    updateBudgetUI(); updateAxisUI(); render();
+  }
+  $("reset").addEventListener("click", reset);
+
+  /* ============ PANIER ============ */
+  const lines = () => Object.entries(cart).filter(([, q]) => q > 0)
+    .map(([id, q]) => ({ p: BY_ID[id], q })).filter((l) => l.p);
+  const count = () => Object.values(cart).reduce((a, b) => a + b, 0);
+  const subtotal = () => lines().reduce((s, l) => s + l.p.price * l.q, 0);
+
+  const drawer = $("drawer"), ovl = $("ovl");
+  const openCart = () => { drawer.classList.add("on"); ovl.classList.add("on"); body.classList.add("modal-open"); };
+  const closeCart = () => { drawer.classList.remove("on"); ovl.classList.remove("on"); body.classList.remove("modal-open"); };
+  $("cart-btn").addEventListener("click", openCart);
+  $("dclose").addEventListener("click", closeCart);
+  ovl.addEventListener("click", closeCart);
+
+  function toast(msg) {
+    const t = $("toast");
+    t.innerHTML = ICONS.check + `<span>${msg}</span>`;
+    t.classList.add("on");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove("on"), 2100);
+  }
+
+  grid.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-add]");
+    if (!b) return;
+    const id = b.dataset.add;
+    cart[id] = (cart[id] || 0) + 1;
+    renderCart();
+    b.classList.add("done");
+    b.innerHTML = ICONS.check + "Ajouté";
+    setTimeout(() => { b.classList.remove("done"); b.innerHTML = ICONS.cart + "Ajouter"; }, 1200);
+    const cc = $("cc");
+    cc.classList.remove("bump"); void cc.offsetWidth; cc.classList.add("bump");
+    toast(`${BY_ID[id].name} ajouté au panier`);
+  });
+
+  function renderCart() {
+    const ls = lines(), n = count();
+    $("cc").textContent = n;
+    $("cc").style.display = n ? "grid" : "none";
+
+    if (!ls.length) {
+      $("db").innerHTML = `<div class="cempty">${ICONS.cart}<p>Votre panier est vide.</p></div>`;
+      $("df").style.display = "none";
+      return;
+    }
+    $("df").style.display = "block";
+    $("db").innerHTML = ls.map((l) => `
+      <div class="ci">
+        <div class="th">${PRODUCT_ICONS[l.p.icon] || ""}</div>
+        <div class="inf">
+          <h4>${l.p.name}</h4>
+          <span class="cat">${CATS[l.p.category]}</span>
+          <div class="r2">
+            <div class="qty">
+              <button type="button" data-q="d" data-id="${l.p.id}">${ICONS.minus}</button>
+              <span>${l.q}</span>
+              <button type="button" data-q="i" data-id="${l.p.id}">${ICONS.plus}</button>
+            </div>
+            <div style="display:flex;align-items:center">
+              <span class="ip">${fmt(l.p.price * l.q)}</span>
+              <button type="button" class="rm" data-rm="${l.p.id}">${ICONS.trash}</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join("");
+
+    const sub = subtotal();
+    const ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
+    $("dtotal").textContent = fmt(sub + ship);
+    $("snote").innerHTML = sub >= FREE_SHIP
+      ? ICONS.truck + "<span>Livraison gratuite débloquée</span>"
+      : ICONS.truck + `<span>Plus que ${fmt(FREE_SHIP - sub)} pour la livraison gratuite</span>`;
+  }
+
+  $("db").addEventListener("click", (e) => {
+    const q = e.target.closest("[data-q]"), r = e.target.closest("[data-rm]");
+    if (q) {
+      const id = q.dataset.id;
+      cart[id] = Math.max(0, (cart[id] || 0) + (q.dataset.q === "i" ? 1 : -1));
+      if (!cart[id]) delete cart[id];
+      renderCart();
+    } else if (r) { delete cart[r.dataset.rm]; renderCart(); }
+  });
+
+  /* ============ CHECKOUT ============ */
+  let step = 1;
+  const modal = $("cmodal");
+
+  function openCheckout() {
+    if (!count()) return;
+    closeCart();
+    step = 1; showStep(); renderSummary();
+    modal.classList.add("on"); body.classList.add("modal-open");
+  }
+  const closeCheckout = () => { modal.classList.remove("on"); body.classList.remove("modal-open"); };
+  $("go-checkout").addEventListener("click", openCheckout);
+  $("cclose").addEventListener("click", closeCheckout);
+  $("cmo").addEventListener("click", closeCheckout);
+
+  function renderSummary() {
+    const ls = lines();
+    $("si").innerHTML = ls.map((l) => `<div><span>${l.p.name} × ${l.q}</span><span>${fmt(l.p.price * l.q)}</span></div>`).join("");
+    const sub = subtotal(), ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
+    $("s-sub").textContent = fmt(sub);
+    $("s-ship").textContent = ship ? fmt(ship) : "Gratuite";
+    $("s-tot").textContent = fmt(sub + ship);
+  }
+
+  function showStep() {
+    $("st1").style.display = step === 1 ? "block" : "none";
+    $("st2").style.display = step === 2 ? "block" : "none";
+    $("st3").style.display = step === 3 ? "block" : "none";
+    document.querySelectorAll(".steps .s").forEach((el, i) => {
+      el.classList.toggle("done", i + 1 < step);
+      el.classList.toggle("act", i + 1 === step);
+    });
+    $("cnav").style.display = step === 3 ? "none" : "flex";
+  }
+
+  function checkShipping() {
+    let ok = true;
+    ["f-name", "f-phone", "f-addr", "f-city"].forEach((id) => {
+      const el = $(id), w = el.closest(".fld");
+      const bad = !el.value.trim();
+      w.classList.toggle("err", bad);
+      if (bad) ok = false;
+    });
+    return ok;
+  }
+
+  function luhn(s) {
+    const d = s.replace(/\D/g, "");
+    if (d.length < 13) return false;
+    let sum = 0, alt = false;
+    for (let i = d.length - 1; i >= 0; i--) {
+      let n = +d[i];
+      if (alt) { n *= 2; if (n > 9) n -= 9; }
+      sum += n; alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
+
+  function checkPayment() {
+    let ok = true;
+    const set = (el, valid) => { el.closest(".fld").classList.toggle("err", !valid); if (!valid) ok = false; };
+    set($("p-name"), $("p-name").value.trim().length > 1);
+    set($("p-num"), luhn($("p-num").value));
+    set($("p-exp"), /^(0[1-9]|1[0-2])\/\d{2}$/.test($("p-exp").value.trim()));
+    set($("p-cvc"), /^\d{3,4}$/.test($("p-cvc").value.trim()));
+    return ok;
+  }
+
+  $("cnext").addEventListener("click", () => {
+    if (step === 1) { if (!checkShipping()) return; step = 2; }
+    else if (step === 2) {
+      if (!checkPayment()) return;
+      step = 3;
+      const sub = subtotal(), ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
+      $("oid").textContent = "Commande n° MW-" + Math.floor(100000 + Math.random() * 899999);
+      $("ctot").textContent = fmt(sub + ship);
+      Object.keys(cart).forEach((k) => delete cart[k]);
+      renderCart();
+    }
+    showStep();
+  });
+  $("cback").addEventListener("click", () => { if (step > 1) { step--; showStep(); } });
+  $("cdone").addEventListener("click", closeCheckout);
+
+  // formatage carte en direct
+  $("fill-demo").addEventListener("click", () => {
+    const d = new Date();
+    const exp = String(d.getMonth() + 1).padStart(2, "0") + "/" + String((d.getFullYear() + 2) % 100);
+    const set = (id, val) => {
+      const el = $(id);
+      el.value = val;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.closest(".fld").classList.remove("err");
+    };
+    set("p-name", "CARTE DE TEST");
+    set("p-num", "4242424242424242");
+    set("p-exp", exp.replace("/", ""));
+    set("p-cvc", "123");
+    $("p-exp").value = exp;
+    $("v-exp").textContent = exp;
+  });
+
+  $("p-num").addEventListener("input", (e) => {
+    const d = e.target.value.replace(/\D/g, "").slice(0, 16);
+    e.target.value = d.replace(/(.{4})/g, "$1 ").trim();
+    $("v-num").textContent = d.length ? e.target.value.padEnd(19, "•") : "•••• •••• •••• ••••";
+  });
+  $("p-name").addEventListener("input", (e) => {
+    $("v-name").textContent = e.target.value.trim().toUpperCase() || "VOTRE NOM";
+  });
+  $("p-exp").addEventListener("input", (e) => {
+    let v = e.target.value.replace(/\D/g, "").slice(0, 4);
+    if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+    e.target.value = v;
+    $("v-exp").textContent = v || "MM/AA";
+  });
+
+  // Échap ferme les panneaux
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (modal.classList.contains("on")) closeCheckout();
+    else if (drawer.classList.contains("on")) closeCart();
+  });
+
+  /* ============ HEADER AU SCROLL ============ */
+  const hdr = document.querySelector("header.hdr");
+  window.addEventListener("scroll", () => {
+    hdr.classList.toggle("scrolled", window.scrollY > 40);
+  }, { passive: true });
+
+  /* ============ INIT ============ */
+  axisEl.value = 50;
+  budgetEl.max = BUDGET_MAX;
+  budgetEl.value = BUDGET_MAX;
+  updateBudgetUI();
+  updateAxisUI();
+  render();
+  renderCart();
+
+  MWVisuals.initBackground();
+  MWVisuals.initCursor();
+  MWVisuals.bindTilt();
+  MWVisuals.initHero();
+})();

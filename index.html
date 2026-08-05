@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Middlwear — Tech importée, prix ajustés au Maroc</title>
+<meta name="description" content="Ordinateurs, objets connectés, gadgets et trottinettes électriques. Sourcés dans le monde, benchmarkés pour le marché marocain." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="aurora"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grain"></div>
+<div class="cursor-glow"></div>
+
+<!-- ================= INTRO ================= -->
+<div id="intro">
+  <div class="intro-stage">
+    <div class="intro-logo-wrap">
+      <div class="orbit-ring"></div>
+      <div class="orbit-ring r2"></div>
+      <div class="orbit-chip c1" data-ic="laptop"></div>
+      <div class="orbit-chip c2" data-ic="watch"></div>
+      <div class="orbit-chip c3" data-ic="scooter"></div>
+      <div class="orbit-chip c4" data-ic="earbuds"></div>
+      <div class="orbit-chip c5" data-ic="ring"></div>
+      <div class="orbit-chip c6" data-ic="drone"></div>
+      <div class="sweep"></div>
+      <img class="intro-logo" src="assets/logo-full.png" alt="Middlwear" />
+    </div>
+    <p class="intro-tagline">TECH IMPORTÉE · PRIX AJUSTÉS AU MAROC</p>
+  </div>
+  <button id="skip" class="intro-skip" type="button">Passer →</button>
+</div>
+
+<!-- ================= APP ================= -->
+<div class="app" id="app">
+
+  <div class="demo-strip"><span id="i-demo"></span>Site de démonstration — les produits, les prix et le paiement sont fictifs.</div>
+
+  <header class="hdr">
+    <div class="wrap hdr-in">
+      <a href="#" class="brand">
+        <img src="assets/logo-mark.png" alt="" />
+        <span class="brand-txt">
+          <span class="brand-word">MIDDLWEAR</span>
+          <span class="brand-tag">TECH · MAROC</span>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="#shop">Boutique</a>
+        <a href="#about">Notre méthode</a>
+      </nav>
+      <button type="button" class="cart-btn" id="cart-btn">
+        <span id="i-cart"></span>Panier<span class="cart-count" id="cc">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow"><span id="i-spark"></span>Ordinateurs · Connecté · Gadgets · Mobilité</span>
+        <h1>Le matériel tech,<br /><span class="grad">au juste prix marocain.</span></h1>
+        <p class="lede">Middlwear sélectionne ordinateurs, objets connectés, gadgets et trottinettes électriques chez des fournisseurs internationaux — puis compare chaque référence au marché local avant de fixer son prix.</p>
+        <div class="hero-ctas">
+          <a href="#shop" class="btn btn-primary"><span id="i-bolt"></span>Explorer le catalogue</a>
+          <a href="#about" class="btn btn-ghost">Notre méthode</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat"><strong>30+</strong><span>Références</span></div>
+          <div class="hstat"><strong>4</strong><span>Catégories</span></div>
+          <div class="hstat"><strong>100%</strong><span>Prix benchmarkés</span></div>
+        </div>
+      </div>
+      <div class="hero-scene">
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-scene-fallback" id="hero-fallback" style="display:none">
+          <div class="fallback-cube"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <img class="hero-logo-float" src="assets/logo-mark.png" alt="" />
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee">
+    <div class="marquee-track" id="marquee"></div>
+  </div>
+
+  <!-- MÉTHODE -->
+  <section class="sect wrap" id="about">
+    <div class="sect-head reveal">
+      <h2>Un intermédiaire, pas un revendeur de plus.</h2>
+      <p>Middlwear se place entre les fournisseurs internationaux et le marché marocain. L'objectif n'est pas d'être le moins cher à tout prix, mais d'être juste : un prix aligné sur ce que vaut réellement le produit ici, livré partout au Maroc.</p>
+    </div>
+    <div class="about-cards">
+      <div class="tilt reveal" data-tilt="10">
+        <div class="about-ic" id="i-globe"></div>
+        <h3>Sourcing mondial</h3>
+        <p>On sélectionne des fournisseurs fiables sur chaque catégorie : informatique, objets connectés, gadgets audio et vidéo, mobilité électrique.</p>
+      </div>
+      <div class="tilt reveal d1" data-tilt="10">
+        <div class="about-ic" id="i-wallet2"></div>
+        <h3>Benchmark Maroc</h3>
+        <p>Chaque référence est comparée aux prix pratiqués localement — grandes enseignes et marketplaces — pour éviter le sur-prix comme le sous-prix suspect.</p>
+      </div>
+      <div class="tilt reveal d2" data-tilt="10">
+        <div class="about-ic" id="i-shield"></div>
+        <h3>Prix ajusté & livraison</h3>
+        <p>Le prix final reflète le marché marocain. Livraison dans tout le pays, paiement sécurisé, et un indice de performance affiché sur chaque produit.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOUTIQUE -->
+  <section class="sect wrap" id="shop" style="padding-top:20px">
+    <div class="sect-head reveal">
+      <h2>Trouvez votre équilibre.</h2>
+      <p>Cherchez librement, puis déplacez le curseur : à gauche on privilégie votre budget, à droite la performance pure. Le classement s'adapte en direct.</p>
+    </div>
+
+    <div class="panel reveal">
+      <div class="search-row">
+        <div class="sw">
+          <span id="i-search"></span>
+          <input type="text" id="q" placeholder="Rechercher : ordinateur, montre, trottinette…" autocomplete="off" />
+        </div>
+        <select class="sel" id="sort" aria-label="Trier">
+          <option value="smart">Tri intelligent</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+          <option value="newest">Nouveautés</option>
+        </select>
+      </div>
+
+      <div class="chips" id="chips">
+        <button type="button" class="chip on" data-cat="all">Tous</button>
+        <button type="button" class="chip" data-cat="ordinateurs">Ordinateurs</button>
+        <button type="button" class="chip" data-cat="connecte">Connecté</button>
+        <button type="button" class="chip" data-cat="gadgets">Gadgets</button>
+        <button type="button" class="chip" data-cat="mobilite">Mobilité</button>
+      </div>
+
+      <div class="axis-block">
+        <div>
+          <div class="axis-head">
+            <span class="axis-end eco" id="end-eco"><span id="i-wallet"></span>Économique</span>
+            <span class="axis-end perf" id="end-perf">Performance<span id="i-bolt2"></span></span>
+          </div>
+          <div class="axis-track-wrap">
+            <div class="axis-track"></div>
+            <div class="axis-ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <input type="range" id="axis" min="0" max="100" step="1" value="50" aria-label="Curseur économique / performance" />
+          </div>
+          <div class="axis-caption" id="axis-caption"></div>
+        </div>
+
+        <div class="budget">
+          <label for="budget">Budget maximum</label>
+          <div class="brw">
+            <div class="t"></div>
+            <div class="f" id="bfill"></div>
+            <input type="range" id="budget" min="0" max="18000" step="100" value="18000" />
+          </div>
+          <span class="budget-val" id="bval">Jusqu'à 18 000 Dh+</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <span class="count" id="count"></span>
+      <button type="button" class="reset" id="reset">Réinitialiser les filtres</button>
+    </div>
+
+    <div class="grid" id="grid" aria-live="polite"></div>
+  </section>
+
+  <footer class="ftr">
+    <div class="wrap ftr-in">
+      <div class="ftr-brand">
+        <img src="assets/logo-full.png" alt="Middlwear" />
+      </div>
+      <p>
+        Catalogue de démonstration — prix indicatifs benchmarkés sur le marché marocain.<br />
+        Paiement en mode démo : aucune transaction réelle, aucune donnée envoyée à un serveur.
+      </p>
+    </div>
+  </footer>
+</div>
+
+<!-- ================= PANIER ================= -->
+<div class="ovl" id="ovl"></div>
+<aside class="drawer" id="drawer" aria-label="Panier">
+  <div class="dh">
+    <h2>Votre panier</h2>
+    <button type="button" class="ibtn" id="dclose" aria-label="Fermer"><span id="i-x1"></span></button>
+  </div>
+  <div class="db" id="db"></div>
+  <div class="df" id="df" style="display:none">
+    <div class="ship-note" id="snote"></div>
+    <div class="dtot"><span>Total</span><strong id="dtotal">0 Dh</strong></div>
+    <button type="button" class="btn btn-primary" id="go-checkout">Passer la commande</button>
+  </div>
+</aside>
+
+<!-- ================= CHECKOUT ================= -->
+<div class="cmodal" id="cmodal">
+  <div class="mo" id="cmo"></div>
+  <div class="cpanel">
+    <div class="ch">
+      <h2>Commande</h2>
+      <button type="button" class="ibtn" id="cclose" aria-label="Fermer"><span id="i-x2"></span></button>
+    </div>
+    <div class="steps">
+      <div class="s act"><div class="fl"></div></div>
+      <div class="s"><div class="fl"></div></div>
+      <div class="s"><div class="fl"></div></div>
+    </div>
+
+    <div class="clay">
+      <div class="cstage">
+
+        <div id="st1">
+          <h3><span id="i-pin"></span>Adresse de livraison</h3>
+          <div class="fg">
+            <div class="fld full"><label for="f-name">Nom complet</label><input type="text" id="f-name" placeholder="Nom et prénom" /><span class="em">Champ requis</span></div>
+            <div class="fld"><label for="f-phone">Téléphone</label><input type="tel" id="f-phone" placeholder="06 12 34 56 78" /><span class="em">Champ requis</span></div>
+            <div class="fld"><label for="f-city">Ville</label><input type="text" id="f-city" placeholder="Casablanca, Rabat…" /><span class="em">Champ requis</span></div>
+            <div class="fld full"><label for="f-addr">Adresse</label><input type="text" id="f-addr" placeholder="Rue, quartier, numéro" /><span class="em">Champ requis</span></div>
+          </div>
+        </div>
+
+        <div id="st2" style="display:none">
+          <h3><span id="i-card"></span>Paiement</h3>
+          <div class="demo-banner">
+            <span id="i-warn"></span>
+            <div>
+              <strong>Ceci est une maquette — n'entrez pas de vraie carte.</strong>
+              Aucun paiement n'est traité et aucune donnée ne quitte votre navigateur.
+              Utilisez le numéro de test <button type="button" class="fill-demo" id="fill-demo">remplir automatiquement</button>
+            </div>
+          </div>
+          <div class="cardv">
+            <div class="chp"></div>
+            <div class="nm" id="v-num">•••• •••• •••• ••••</div>
+            <div class="mt"><span id="v-name">VOTRE NOM</span><span id="v-exp">MM/AA</span></div>
+          </div>
+          <div class="fg">
+            <div class="fld full"><label for="p-name">Nom sur la carte</label><input type="text" id="p-name" placeholder="Carte de test uniquement" /><span class="em">Nom invalide</span></div>
+            <div class="fld full"><label for="p-num">Numéro de carte</label><input type="text" id="p-num" placeholder="Numéro de test — pas de vraie carte" inputmode="numeric" /><span class="em">Numéro invalide</span></div>
+            <div class="fld"><label for="p-exp">Expiration</label><input type="text" id="p-exp" placeholder="MM/AA" inputmode="numeric" /><span class="em">Format MM/AA</span></div>
+            <div class="fld"><label for="p-cvc">CVC</label><input type="text" id="p-cvc" placeholder="123" inputmode="numeric" maxlength="4" /><span class="em">3 à 4 chiffres</span></div>
+          </div>
+        </div>
+
+        <div id="st3" style="display:none">
+          <div class="confirm">
+            <div class="cic"><span id="i-ok"></span></div>
+            <h3>Commande confirmée</h3>
+            <p>Merci ! Votre commande de démonstration a bien été enregistrée.</p>
+            <div class="oid" id="oid">Commande n° MW-000000</div>
+            <p style="font-family:var(--f-mono);font-size:13px">Total réglé : <strong id="ctot" style="color:var(--text-hi)">0 Dh</strong></p>
+            <button type="button" class="btn btn-primary" id="cdone" style="margin-top:20px">Continuer mes achats</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="summ">
+        <h4>Résumé</h4>
+        <div class="si" id="si"></div>
+        <div class="sl"><span>Sous-total</span><strong id="s-sub">0 Dh</strong></div>
+        <div class="sl"><span>Livraison</span><strong id="s-ship">0 Dh</strong></div>
+        <div class="sl tot"><span>Total</span><strong id="s-tot">0 Dh</strong></div>
+      </div>
+    </div>
+
+    <div class="cnav" id="cnav">
+      <button type="button" class="btn btn-ghost" id="cback"><span id="i-back"></span>Retour</button>
+      <button type="button" class="btn btn-primary" id="cnext">Continuer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/data.js"></script>
+<script>
+  // injection des icônes
+  document.querySelectorAll(".orbit-chip[data-ic]").forEach((el) => { el.innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
+  const put = (id, svg) => { const el = document.getElementById(id); if (el) el.innerHTML = svg; };
+  put("i-cart", ICONS.cart); put("i-search", ICONS.search); put("i-spark", ICONS.sparkle);
+  put("i-bolt", ICONS.bolt); put("i-bolt2", ICONS.bolt); put("i-wallet", ICONS.wallet); put("i-wallet2", ICONS.wallet);
+  put("i-globe", ICONS.globe); put("i-shield", ICONS.shield);
+  put("i-x1", ICONS.close); put("i-x2", ICONS.close);
+  put("i-pin", ICONS.pin); put("i-card", ICONS.card); put("i-lock", ICONS.lock);
+  put("i-ok", ICONS.checkCircle); put("i-warn", ICONS.warn); put("i-demo", ICONS.warn); put("i-back", ICONS.arrowLeft);
+
+  // bandeau défilant
+  const MARQ = [
+    ["truck", "Livraison partout au Maroc"], ["shield", "Garantie 12 mois"],
+    ["wallet", "Prix benchmarkés localement"], ["bolt", "Nouveautés chaque mois"],
+    ["globe", "Sourcing international"], ["star", "Sélection vérifiée"]
+  ];
+  const track = document.getElementById("marquee");
+  const html = MARQ.map(([ic, txt]) => `<span class="marquee-item">${ICONS[ic] || ""}${txt}</span>`).join("");
+  track.innerHTML = html + html;
+</script>
+<script src="js/visuals.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
