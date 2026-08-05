@@ -46,6 +46,7 @@
   const state = {
     q: "",
     cat: "all",
+    icon: null,       // affine "connecte" (montre vs lunette) quand on vient d'un pick hero
     budget: BUDGET_MAX,
     axis: 50,        // 0 = économique, 100 = performance
     axisTouched: false,
@@ -101,8 +102,9 @@
     let list = PRODUCTS.filter((p) => {
       const okQ = !state.q || (p.name + " " + p.brand + " " + p.specs.join(" ")).toLowerCase().includes(state.q);
       const okC = state.cat === "all" || p.category === state.cat;
+      const okI = !state.icon || p.icon === state.icon;
       const okB = p.price <= state.budget;
-      return okQ && okC && okB;
+      return okQ && okC && okI && okB;
     });
 
     // Aux extrémités du curseur, on écarte doucement les produits hors sujet
@@ -178,7 +180,7 @@
   $("q").addEventListener("input", (e) => {
     clearTimeout(deb);
     const v = e.target.value;
-    deb = setTimeout(() => { state.q = v.trim().toLowerCase(); render(); }, 150);
+    deb = setTimeout(() => { state.q = v.trim().toLowerCase(); state.icon = null; render(); }, 150);
   });
 
   $("chips").addEventListener("click", (e) => {
@@ -187,7 +189,20 @@
     $("chips").querySelectorAll(".chip").forEach((x) => x.classList.remove("on"));
     c.classList.add("on");
     state.cat = c.dataset.cat;
+    state.icon = null;
     render();
+  });
+
+  /* ============ PICKS HERO (boule) ============ */
+  document.querySelectorAll(".hero-pick[data-cat]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.cat = btn.dataset.cat;
+      state.icon = btn.dataset.ic || null;
+      state.q = ""; $("q").value = "";
+      $("chips").querySelectorAll(".chip").forEach((x) => x.classList.toggle("on", x.dataset.cat === state.cat));
+      render();
+      $("shop").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    });
   });
 
   $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
@@ -213,7 +228,7 @@
   });
 
   function reset() {
-    Object.assign(state, { q: "", cat: "all", budget: BUDGET_MAX, axis: 50, axisTouched: false, sort: "smart" });
+    Object.assign(state, { q: "", cat: "all", icon: null, budget: BUDGET_MAX, axis: 50, axisTouched: false, sort: "smart" });
     $("q").value = "";
     $("sort").value = "smart";
     budgetEl.value = BUDGET_MAX;

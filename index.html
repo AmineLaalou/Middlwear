@@ -40,8 +40,6 @@
 <!-- ================= APP ================= -->
 <div class="app" id="app">
 
-  <div class="demo-strip"><span id="i-demo"></span>Site de démonstration — les produits, les prix et le paiement sont fictifs.</div>
-
   <header class="hdr">
     <div class="wrap hdr-in">
       <a href="#" class="brand">
@@ -55,9 +53,19 @@
         <a href="#shop">Boutique</a>
         <a href="#about">Notre méthode</a>
       </nav>
-      <button type="button" class="cart-btn" id="cart-btn">
-        <span id="i-cart"></span>Panier<span class="cart-count" id="cc">0</span>
-      </button>
+      <div class="hdr-actions">
+        <button type="button" class="acct-btn" id="acct-btn">
+          <span id="i-user"></span><span id="acct-label">Se connecter</span>
+        </button>
+        <div class="acct-drop" id="acct-drop">
+          <div class="acct-drop-name" id="acct-drop-name"></div>
+          <div class="acct-drop-email" id="acct-drop-email"></div>
+          <button type="button" class="acct-drop-logout" id="acct-logout">Déconnexion</button>
+        </div>
+        <button type="button" class="cart-btn" id="cart-btn">
+          <span id="i-cart"></span>Panier<span class="cart-count" id="cc">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -84,6 +92,19 @@
           <div class="fallback-cube"><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
         <img class="hero-logo-float" src="assets/logo-mark.png" alt="" />
+
+        <button type="button" class="hero-pick hp-tl" data-cat="ordinateurs" data-ic="laptop" title="Ordinateurs">
+          <span class="hp-ic"></span><span class="hp-label">Ordinateurs</span>
+        </button>
+        <button type="button" class="hero-pick hp-tr" data-cat="connecte" data-ic="watch" title="Montres connectées">
+          <span class="hp-ic"></span><span class="hp-label">Montres</span>
+        </button>
+        <button type="button" class="hero-pick hp-bl" data-cat="mobilite" data-ic="scooter" title="Trottinettes électriques">
+          <span class="hp-ic"></span><span class="hp-label">Trottinettes</span>
+        </button>
+        <button type="button" class="hero-pick hp-br" data-cat="connecte" data-ic="glasses" title="Lunettes connectées">
+          <span class="hp-ic"></span><span class="hp-label">Lunettes</span>
+        </button>
       </div>
     </div>
   </section>
@@ -287,6 +308,44 @@
   </div>
 </div>
 
+<!-- ================= COMPTE ================= -->
+<div class="ovl" id="aovl"></div>
+<div class="amodal" id="amodal">
+  <div class="ah">
+    <h2>Mon compte</h2>
+    <button type="button" class="ibtn" id="aclose" aria-label="Fermer"><span id="i-x3"></span></button>
+  </div>
+
+  <div class="atabs">
+    <button type="button" class="atab on" id="atab-login" data-mode="login">Connexion</button>
+    <button type="button" class="atab" id="atab-register" data-mode="register">Créer un compte</button>
+  </div>
+
+  <div class="asocial">
+    <a class="social-btn" id="soc-google" href="/api/auth/google">
+      <span class="soc-ic">G</span>Continuer avec Google
+    </a>
+    <a class="social-btn" id="soc-facebook" href="/api/auth/facebook">
+      <span class="soc-ic">f</span>Continuer avec Facebook
+    </a>
+    <a class="social-btn" id="soc-instagram" href="/api/auth/instagram">
+      <span class="soc-ic">◎</span>Continuer avec Instagram
+    </a>
+  </div>
+
+  <div class="adiv"><span>ou avec un email</span></div>
+
+  <form id="aform" novalidate>
+    <div class="fg">
+      <div class="fld full" id="fld-name"><label for="a-name">Nom complet</label><input type="text" id="a-name" autocomplete="name" /></div>
+      <div class="fld full"><label for="a-email">Email</label><input type="email" id="a-email" autocomplete="email" /></div>
+      <div class="fld full"><label for="a-password">Mot de passe</label><input type="password" id="a-password" autocomplete="current-password" /></div>
+    </div>
+    <div class="aerr" id="aerr" style="display:none"></div>
+    <button type="submit" class="btn btn-primary" id="a-submit" style="width:100%;justify-content:center;margin-top:14px">Se connecter</button>
+  </form>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -295,13 +354,15 @@
 <script>
   // injection des icônes
   document.querySelectorAll(".orbit-chip[data-ic]").forEach((el) => { el.innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
+  document.querySelectorAll(".hero-pick[data-ic]").forEach((el) => { el.querySelector(".hp-ic").innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
   const put = (id, svg) => { const el = document.getElementById(id); if (el) el.innerHTML = svg; };
   put("i-cart", ICONS.cart); put("i-search", ICONS.search); put("i-spark", ICONS.sparkle);
+  put("i-user", ICONS.user);
   put("i-bolt", ICONS.bolt); put("i-bolt2", ICONS.bolt); put("i-wallet", ICONS.wallet); put("i-wallet2", ICONS.wallet);
   put("i-globe", ICONS.globe); put("i-shield", ICONS.shield);
   put("i-x1", ICONS.close); put("i-x2", ICONS.close);
   put("i-pin", ICONS.pin); put("i-card", ICONS.card); put("i-lock", ICONS.lock);
-  put("i-ok", ICONS.checkCircle); put("i-warn", ICONS.warn); put("i-demo", ICONS.warn); put("i-back", ICONS.arrowLeft);
+  put("i-ok", ICONS.checkCircle); put("i-warn", ICONS.warn); put("i-back", ICONS.arrowLeft); put("i-x3", ICONS.close);
 
   // bandeau défilant
   const MARQ = [
@@ -314,6 +375,7 @@
   track.innerHTML = html + html;
 </script>
 <script src="js/visuals.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
