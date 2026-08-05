@@ -94,16 +94,20 @@
         <img class="hero-logo-float" src="assets/logo-mark.png" alt="" />
 
         <button type="button" class="hero-pick hp-tl" data-cat="ordinateurs" data-ic="laptop" title="Ordinateurs">
-          <span class="hp-ic"></span><span class="hp-label">Ordinateurs</span>
+          <span class="hp-photo"><img src="assets/photos/laptop.png" alt="Ordinateur portable" loading="lazy" /></span>
+          <span class="hp-label">Ordinateurs</span>
         </button>
         <button type="button" class="hero-pick hp-tr" data-cat="connecte" data-ic="watch" title="Montres connectées">
-          <span class="hp-ic"></span><span class="hp-label">Montres</span>
+          <span class="hp-photo"><img src="assets/photos/watch.jpg" alt="Montre connectée" loading="lazy" /></span>
+          <span class="hp-label">Montres</span>
         </button>
         <button type="button" class="hero-pick hp-bl" data-cat="mobilite" data-ic="scooter" title="Trottinettes électriques">
-          <span class="hp-ic"></span><span class="hp-label">Trottinettes</span>
+          <span class="hp-photo"><img src="assets/photos/scooter.png" alt="Trottinette électrique" loading="lazy" /></span>
+          <span class="hp-label">Trottinettes</span>
         </button>
         <button type="button" class="hero-pick hp-br" data-cat="connecte" data-ic="glasses" title="Lunettes connectées">
-          <span class="hp-ic"></span><span class="hp-label">Lunettes</span>
+          <span class="hp-photo"><img src="assets/photos/glasses.jpg" alt="Lunettes connectées" loading="lazy" /></span>
+          <span class="hp-label">Lunettes</span>
         </button>
       </div>
     </div>
@@ -312,7 +316,10 @@
 <div class="ovl" id="aovl"></div>
 <div class="amodal" id="amodal">
   <div class="ah">
-    <h2>Mon compte</h2>
+    <div>
+      <h2>Mon compte</h2>
+      <p class="a-sub" id="a-sub">Connecte-toi pour suivre tes commandes et retrouver ton panier.</p>
+    </div>
     <button type="button" class="ibtn" id="aclose" aria-label="Fermer"><span id="i-x3"></span></button>
   </div>
 
@@ -354,7 +361,6 @@
 <script>
   // injection des icônes
   document.querySelectorAll(".orbit-chip[data-ic]").forEach((el) => { el.innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
-  document.querySelectorAll(".hero-pick[data-ic]").forEach((el) => { el.querySelector(".hp-ic").innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
   const put = (id, svg) => { const el = document.getElementById(id); if (el) el.innerHTML = svg; };
   put("i-cart", ICONS.cart); put("i-search", ICONS.search); put("i-spark", ICONS.sparkle);
   put("i-user", ICONS.user);

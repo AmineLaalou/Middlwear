@@ -79,6 +79,21 @@ const MWAuth = (() => {
       currentUser = null; // backend statique/indisponible : mode dégradé silencieux
     }
     renderHeader();
+    return currentUser;
+  }
+
+  /* ---------- Popup de connexion automatique (façon grands sites) ---------- */
+  const AUTO_PROMPT_DELAY_MS = 7000;
+  const AUTO_PROMPT_KEY = "mw_auth_prompted";
+
+  function maybeAutoPrompt(skip) {
+    if (skip || currentUser || sessionStorage.getItem(AUTO_PROMPT_KEY)) return;
+    setTimeout(() => {
+      if (currentUser || amodal().classList.contains("on") || document.body.classList.contains("modal-open")) return;
+      sessionStorage.setItem(AUTO_PROMPT_KEY, "1");
+      setMode("login");
+      openModal();
+    }, AUTO_PROMPT_DELAY_MS);
   }
 
   async function refreshSocialButtons() {
@@ -164,6 +179,7 @@ const MWAuth = (() => {
     // Retour d'un flux OAuth (voir server/routes/oauth.js) : ?authError=...&provider=...
     const params = new URLSearchParams(location.search);
     const err = params.get("authError");
+    const skipAutoPrompt = Boolean(err); // on ne relance pas le popup juste après une tentative de connexion
     if (err) {
       const provider = params.get("provider") || "";
       const messages = {
@@ -178,7 +194,7 @@ const MWAuth = (() => {
       history.replaceState({}, "", clean);
     }
 
-    refreshUser();
+    refreshUser().then(() => maybeAutoPrompt(skipAutoPrompt));
     refreshSocialButtons();
   }
 

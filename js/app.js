@@ -40,6 +40,12 @@
   };
 
   const BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+  const CATEGORY_PHOTOS = {
+    laptop: "assets/photos/laptop.png",
+    scooter: "assets/photos/scooter.png",
+    watch: "assets/photos/watch.jpg",
+    glasses: "assets/photos/glasses.jpg"
+  };
   const fmt = (n) => n.toLocaleString("fr-FR") + " Dh";
 
   /* ============ ÉTAT ============ */
@@ -130,10 +136,14 @@
     const badge = p.badge
       ? `<span class="badge ${p.badge.toLowerCase().replace(/\s+/g, "-").replace("é", "e")}">${p.badge}</span>` : "";
     const old = p.oldPrice ? `<span class="pold">${fmt(p.oldPrice)}</span>` : "";
+    const photo = CATEGORY_PHOTOS[p.icon];
+    const icHTML = photo
+      ? `<img src="${photo}" alt="${p.name}" loading="lazy" />`
+      : (PRODUCT_ICONS[p.icon] || "");
     return `
       <article class="card" data-tilt="8" style="animation-delay:${Math.min(i * 38, 340)}ms">
         ${badge}
-        <div class="card-ic">${PRODUCT_ICONS[p.icon] || ""}</div>
+        <div class="card-ic${photo ? " has-photo" : ""}">${icHTML}</div>
         <div class="card-cat">${CATS[p.category] || p.category}</div>
         <div class="card-brand">${p.brand}</div>
         <h3 class="card-name">${p.name}</h3>
@@ -195,6 +205,19 @@
 
   /* ============ PICKS HERO (boule) ============ */
   document.querySelectorAll(".hero-pick[data-cat]").forEach((btn) => {
+    if (!reduced && !window.matchMedia("(pointer: coarse)").matches) {
+      btn.addEventListener("mousemove", (e) => {
+        const r = btn.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        btn.style.setProperty("--ry", (px * 22).toFixed(2) + "deg");
+        btn.style.setProperty("--rx", (-py * 22).toFixed(2) + "deg");
+      });
+      btn.addEventListener("mouseleave", () => {
+        btn.style.setProperty("--rx", "0deg");
+        btn.style.setProperty("--ry", "0deg");
+      });
+    }
     btn.addEventListener("click", () => {
       state.cat = btn.dataset.cat;
       state.icon = btn.dataset.ic || null;
