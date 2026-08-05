@@ -1,4 +1,4 @@
-# Middlwear — boutique tech (démo)
+# Middlwear — boutique tech
 
 ## ⚠️ Si tu vois l'ancien site en lançant run.bat
 C'est le **cache du navigateur**. Deux solutions :
@@ -6,12 +6,34 @@ C'est le **cache du navigateur**. Deux solutions :
 - ou ouvre en navigation privée
 
 Vérifie aussi que tu lances bien le `run.bat` **de ce dossier-ci**, et
-qu'aucun ancien serveur ne tourne déjà sur le port 8000.
+qu'aucun ancien serveur ne tourne déjà sur le port 8000 / 3000.
 
-## Lancer
+## Deux façons de lancer le site
+
+### Mode statique — sans comptes utilisateurs
 - **Windows** : double-clic sur `run.bat`
 - **Mac / Linux** : double-clic sur `run.sh` (ou `./run.sh`)
 - **Sans serveur** : ouvre `index.html` directement
+
+Le bouton "Se connecter" reste présent mais inactif (aucun backend à
+contacter) — tout le reste du site (catalogue, panier, checkout maquette)
+fonctionne normalement. C'est ce mode que Netlify Drop / GitHub Pages
+déploient (voir `DEPLOIEMENT.md`).
+
+### Mode complet — comptes, authentification, connexion sociale
+Nécessite [Node.js](https://nodejs.org) 22+ installé.
+- **Windows** : double-clic sur `run-full.bat`
+- **Mac / Linux** : `./run-full.sh`
+
+La première exécution installe les dépendances (`server/node_modules`) et
+crée `server/.env` à partir de `server/.env.example`. Le site est alors
+servi sur `http://localhost:3000`, avec en plus :
+- Création de compte / connexion par email + mot de passe
+- Connexion via Google, Facebook ou Instagram — **désactivée tant que tu
+  n'as pas renseigné les clés API correspondantes dans `server/.env`**
+  (instructions détaillées dans ce fichier)
+- Une vraie base de données utilisateurs (SQLite, fichier
+  `server/data/middlwear.sqlite`, jamais commité sur git)
 
 ## Nouveautés de cette version
 - **Ton logo** partout : intro, header, hero flottant, footer
@@ -38,11 +60,32 @@ middlwear/
 │   ├── data.js      catalogue + indices de performance
 │   ├── icons.js     icônes SVG
 │   ├── visuals.js   3D, particules, tilt, curseur, reveals
+│   ├── auth.js      compte : modale connexion/inscription, OAuth, header
 │   └── app.js       filtres, panier, checkout
 ├── assets/          logo (monogramme + version complète)
-├── run.sh / run.bat
+├── server/          backend mode complet (comptes, auth, OAuth)
+│   ├── server.js    point d'entrée Express (sert aussi le site statique)
+│   ├── db.js        base SQLite (module natif node:sqlite)
+│   ├── lib/session.js
+│   ├── routes/auth.js    register / login / logout / me
+│   ├── routes/oauth.js   Google / Facebook / Instagram
+│   └── .env.example      clés API à renseigner (voir ce fichier)
+├── run.sh / run.bat           mode statique
+├── run-full.sh / run-full.bat mode complet (comptes + auth)
 └── README.md
 ```
+
+## Comptes utilisateurs & connexion sociale
+Voir `server/.env.example` pour la procédure complète d'obtention des clés
+Google / Facebook / Instagram. Résumé :
+- Sans clé configurée pour un fournisseur : son bouton reste grisé, rien ne
+  casse.
+- Les mots de passe sont hashés (bcrypt), la session est un cookie JWT
+  `httpOnly` — jamais accessible en JavaScript côté navigateur.
+- Instagram est le plus contraignant : nécessite un compte Instagram
+  **professionnel** côté utilisateur final, et l'ancienne "Instagram Basic
+  Display API" est arrêtée depuis fin 2024 — le code utilise la nouvelle
+  "Instagram API with Instagram Login".
 
 ## Paiement
 Tunnel entièrement **simulé** (validation Luhn, format de date, confirmation).

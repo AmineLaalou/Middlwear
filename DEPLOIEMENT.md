@@ -1,7 +1,12 @@
 # Mettre Middlwear en ligne (gratuitement)
 
-Le site est 100% statique : pas de serveur, pas de base de données.
-Tout hébergeur gratuit fera l'affaire.
+Deux modes possibles, voir `README.md` pour le détail :
+
+- **Mode statique** (options A/B/C ci-dessous) : pas de serveur, pas de
+  compte utilisateur. C'est ce que ce guide couvre en premier.
+- **Mode complet** (comptes, authentification, connexion sociale) :
+  nécessite un hébergeur qui fait tourner du Node.js — voir la section
+  "Mettre en ligne le mode complet" tout en bas.
 
 ---
 
@@ -87,7 +92,44 @@ git push
 - Après une mise à jour, fais `Ctrl + F5` pour contourner le cache.
 
 ## Rappel important
-Le tunnel de paiement est une **maquette**. Un bandeau le signale en haut du
-site et sur l'écran de paiement, et un bouton remplit automatiquement une
-carte de test. Aucune donnée n'est envoyée nulle part — mais préviens quand
-même tes amis de ne jamais saisir de vraie carte sur une démo.
+Le tunnel de paiement reste une **maquette**, même en mode complet (comptes
+réels) : un bandeau le signale sur l'écran de paiement, et un bouton remplit
+automatiquement une carte de test. Aucune carte n'est débitée. Pour de vrais
+paiements il faudra brancher CMI / Stripe avec un compte marchand — hors
+scope de ce site pour l'instant.
+
+---
+
+## Mettre en ligne le mode complet (comptes + authentification)
+
+Contrairement au mode statique, ceci nécessite un hébergeur qui exécute du
+**Node.js** en continu (Netlify Drop / GitHub Pages ne suffisent plus).
+
+### Option recommandée — Render.com (gratuit)
+1. Pousse le dossier `middlwear/` (avec `server/`) sur GitHub — voir Option C
+   plus haut si ce n'est pas déjà fait.
+2. Sur **https://render.com** → *New* → *Web Service* → connecte le repo.
+3. Réglages :
+   - **Root Directory** : `server`
+   - **Build Command** : `npm install`
+   - **Start Command** : `node server.js`
+4. Dans *Environment*, ajoute les variables de `server/.env.example`
+   (au minimum `JWT_SECRET` avec une vraie valeur aléatoire — voir la
+   commande fournie dans ce fichier). Pour les clés Google/Facebook/
+   Instagram, mets à jour `BASE_URL` avec l'URL Render (ex.
+   `https://middlwear.onrender.com`) et les URI de redirection déclarées
+   chez Google/Meta en conséquence.
+5. Déploie. Le site (statique + comptes) est servi depuis la même URL.
+
+**Limite à connaître** : sur le plan gratuit de Render (comme la plupart des
+hébergeurs gratuits), le système de fichiers est effacé à chaque redéploiement
+ou redémarrage — la base SQLite (`server/data/middlwear.sqlite`) repart donc
+de zéro à ce moment-là. Pour une vraie persistance en production, il faudra
+migrer vers une base hébergée (ex. PostgreSQL gratuit sur Render/Railway/
+Supabase) — une évolution à prévoir plus tard, pas bloquante pour tester le
+site avec de vrais comptes aujourd'hui.
+
+### Alternatives équivalentes
+**Railway** (railway.app) et **Fly.io** (fly.io) fonctionnent sur le même
+principe : connecter le repo GitHub, pointer vers `server/`, définir les
+variables d'environnement, déployer. Les trois ont un palier gratuit.
