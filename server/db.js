@@ -25,6 +25,21 @@ db.exec(`
 
   CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider
     ON users(provider, provider_id) WHERE provider_id IS NOT NULL;
+
+  CREATE TABLE IF NOT EXISTS orders (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_ref         TEXT NOT NULL UNIQUE,
+    user_id           INTEGER REFERENCES users(id),
+    customer_name     TEXT NOT NULL,
+    customer_phone    TEXT,
+    customer_city     TEXT,
+    customer_address  TEXT,
+    items_json        TEXT NOT NULL,
+    subtotal          INTEGER NOT NULL,
+    shipping          INTEGER NOT NULL,
+    total             INTEGER NOT NULL,
+    created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 function findByEmail(email) {
@@ -66,4 +81,43 @@ function upsertOAuthUser({ provider, providerId, email, name, avatarUrl }) {
   return findById(Number(info.lastInsertRowid));
 }
 
-module.exports = { db, findByEmail, findByProvider, findById, createLocalUser, upsertOAuthUser };
+function createOrder({ orderRef, userId, customerName, customerPhone, customerCity, customerAddress, items, subtotal, shipping, total }) {
+  db.prepare(`
+    INSERT INTO orders (order_ref, user_id, customer_name, customer_phone, customer_city, customer_address, items_json, subtotal, shipping, total)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(orderRef, userId || null, customerName, customerPhone || null, customerCity || null, customerAddress || null, JSON.stringify(items), subtotal, shipping, total);
+  return db.prepare("SELECT * FROM orders WHERE order_ref = ?").get(orderRef);
+}
+
+function listOrders() {
+  return db.prepare("SELECT * FROM orders ORDER BY created_at DESC").all();
+}
+
+function getStats() {
+  const orders = listOrders();
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
+  const avgOrderValue = totalOrders ? Math.round(totalRevenue / totalOrders) : 0;
+  const today = new Date().toISOString().slice(0, 10);
+  const ordersToday = orders.filter((o) => o.created_at.startsWith(today)).length;
+
+  const productMap = new Map();
+  for (const o of orders) {
+    let items;
+    try { items = JSON.parse(o.items_json); } catch { items = []; }
+    for (const it of items) {
+      const cur = productMap.get(it.id) || { id: it.id, name: it.name, qty: 0, revenue: 0 };
+      cur.qty += it.qty;
+      cur.revenue += it.price * it.qty;
+      productMap.set(it.id, cur);
+    }
+  }
+  const topProducts = Array.from(productMap.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
+
+  return { totalOrders, totalRevenue, avgOrderValue, ordersToday, topProducts };
+}
+
+module.exports = {
+  db, findByEmail, findByProvider, findById, createLocalUser, upsertOAuthUser,
+  createOrder, listOrders, getStats
+};

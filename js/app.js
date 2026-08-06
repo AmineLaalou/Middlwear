@@ -460,9 +460,32 @@
     else if (step === 2) {
       if (!checkPayment()) return;
       step = 3;
+      const ls = lines();
       const sub = subtotal(), ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
-      $("oid").textContent = "Commande n° MW-" + Math.floor(100000 + Math.random() * 899999);
+      const orderRef = "MW-" + Math.floor(100000 + Math.random() * 899999);
+      $("oid").textContent = "Commande n° " + orderRef;
       $("ctot").textContent = fmt(sub + ship);
+
+      // Enregistre la commande côté serveur (mode complet uniquement — voir
+      // server/routes/orders.js). N'empêche jamais la confirmation à l'écran
+      // si le backend est indisponible (mode statique, hors ligne, etc.).
+      fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          orderRef,
+          items: ls.map((l) => ({ id: l.p.id, name: l.p.name, price: l.p.price, qty: l.q })),
+          shipping: {
+            name: $("f-name").value.trim(),
+            phone: $("f-phone").value.trim(),
+            city: $("f-city").value.trim(),
+            address: $("f-addr").value.trim()
+          },
+          subtotal: sub, shippingCost: ship, total: sub + ship
+        })
+      }).catch(() => {});
+
       Object.keys(cart).forEach((k) => delete cart[k]);
       renderCart();
     }

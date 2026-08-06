@@ -32,8 +32,10 @@ servi sur `http://localhost:3000`, avec en plus :
 - Connexion via Google, Facebook ou Instagram — **désactivée tant que tu
   n'as pas renseigné les clés API correspondantes dans `server/.env`**
   (instructions détaillées dans ce fichier)
-- Une vraie base de données utilisateurs (SQLite, fichier
+- Une vraie base de données utilisateurs **et commandes** (SQLite, fichier
   `server/data/middlwear.sqlite`, jamais commité sur git)
+- Un tableau de bord (`admin.html`) avec les statistiques de vente —
+  voir "Commandes & tableau de bord" plus bas
 
 ## Nouveautés de cette version
 - **Ton logo** partout : intro, header, hero flottant, footer
@@ -63,13 +65,16 @@ middlwear/
 │   ├── auth.js      compte : modale connexion/inscription, OAuth, header
 │   └── app.js       filtres, panier, checkout
 ├── assets/          logo (monogramme + version complète)
-├── server/          backend mode complet (comptes, auth, OAuth)
+├── server/          backend mode complet (comptes, auth, OAuth, commandes)
 │   ├── server.js    point d'entrée Express (sert aussi le site statique)
 │   ├── db.js        base SQLite (module natif node:sqlite)
 │   ├── lib/session.js
+│   ├── lib/adminAuth.js  protège /api/orders et /api/stats
 │   ├── routes/auth.js    register / login / logout / me
 │   ├── routes/oauth.js   Google / Facebook / Instagram
+│   ├── routes/orders.js  enregistrement des commandes + stats de vente
 │   └── .env.example      clés API à renseigner (voir ce fichier)
+├── admin.html       tableau de bord (commandes, chiffre d'affaires, top ventes)
 ├── run.sh / run.bat           mode statique
 ├── run-full.sh / run-full.bat mode complet (comptes + auth)
 └── README.md
@@ -87,7 +92,22 @@ Google / Facebook / Instagram. Résumé :
   Display API" est arrêtée depuis fin 2024 — le code utilise la nouvelle
   "Instagram API with Instagram Login".
 
+## Commandes & tableau de bord (mode complet)
+Chaque commande validée (checkout maquette) est enregistrée dans la base —
+nom, ville, articles, montants — et reliée au compte si l'acheteur est
+connecté. Le tableau de bord `http://localhost:3000/admin.html` affiche le
+nombre de commandes, le chiffre d'affaires, le panier moyen et les
+meilleures ventes.
+
+Protégé par une clé (`ADMIN_KEY` dans `server/.env`, générée automatiquement
+au premier `run-full`) : sans elle, personne — pas même toi — ne peut lire
+`/api/orders` ni `/api/stats`. Utile si tu partages un lien public (tunnel,
+hébergement) : les visiteurs voient la boutique, pas la liste des clients.
+
 ## Paiement
 Tunnel entièrement **simulé** (validation Luhn, format de date, confirmation).
-Aucune carte n'est débitée, aucune donnée ne quitte le navigateur. Pour de
-vrais paiements il faudra brancher CMI / Stripe avec ton propre compte marchand.
+Aucune carte n'est débitée, le numéro de carte ne quitte jamais le navigateur.
+En mode complet, la commande (nom, ville, articles, montants) est en revanche
+enregistrée en base pour faire fonctionner le tableau de bord ci-dessus — en
+mode statique, rien n'est envoyé nulle part. Pour de vrais paiements il
+faudra brancher CMI / Stripe avec ton propre compte marchand.

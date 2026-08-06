@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 
 const authRoutes = require("./routes/auth");
 const oauthRoutes = require("./routes/oauth");
+const ordersRoutes = require("./routes/orders");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use(cookieParser());
 // de montage compte, auth.js doit passer en premier pour ne pas être masqué.
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", oauthRoutes);
+app.use("/api", ordersRoutes);
 
 app.use(express.static(SITE_ROOT));
 

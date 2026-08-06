@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Middlwear — Tableau de bord</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { overflow-x: hidden; }
+  .adash { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  .adash h1 { font-family: var(--f-display); font-size: 26px; margin: 0 0 6px; }
+  .adash .sub { color: var(--text-mid); font-size: 13px; margin: 0 0 30px; }
+
+  .agate { max-width: 420px; margin: 90px auto; text-align: center; }
+  .agate input {
+    width: 100%; background: var(--bg-elev-2); border: 1px solid var(--glass-border);
+    border-radius: 10px; color: var(--text-hi); font-family: var(--f-mono); font-size: 14px;
+    padding: 12px 14px; margin: 16px 0; text-align: center;
+  }
+  .agate input:focus { outline: none; border-color: var(--teal); }
+  .agate .err { color: var(--pink); font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+
+  .atiles { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 14px; margin-bottom: 34px; }
+  .atile {
+    background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-lg);
+    padding: 20px;
+  }
+  .atile strong {
+    display: block; font-family: var(--f-display); font-size: 26px; font-weight: 600; margin-bottom: 4px;
+    background: linear-gradient(100deg, var(--teal), var(--violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .atile span { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--text-low); text-transform: uppercase; }
+
+  .apanel { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-lg); padding: 22px; margin-bottom: 24px; overflow-x: auto; }
+  .apanel h2 { font-family: var(--f-display); font-size: 15px; margin: 0 0 16px; }
+  table.atbl { width: 100%; border-collapse: collapse; font-size: 12.5px; white-space: nowrap; }
+  table.atbl th { text-align: left; font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-low); padding: 8px 12px; border-bottom: 1px solid var(--glass-border); }
+  table.atbl td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.05); color: var(--text-mid); }
+  table.atbl tr:last-child td { border-bottom: none; }
+  table.atbl td.hi { color: var(--text-hi); font-weight: 500; }
+  .aempty { color: var(--text-low); font-size: 13px; padding: 20px 0; text-align: center; }
+
+  .abtn {
+    background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-hi);
+    font-size: 13px; padding: 10px 18px; border-radius: 100px; cursor: pointer;
+    font-family: inherit; transition: border-color .2s, background .2s;
+  }
+  .abtn:hover { border-color: var(--glass-border-hi); background: var(--glass-strong); }
+  .atop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; gap: 12px; }
+</style>
+</head>
+<body>
+
+<div class="aurora"></div>
+
+<div id="gate" class="agate">
+  <h1 style="font-family:var(--f-display);font-size:20px;margin:0 0 8px">Tableau de bord Middlwear</h1>
+  <p class="sub" style="margin:0">Clé admin requise (voir <code>server/.env</code> → <code>ADMIN_KEY</code>)</p>
+  <input type="password" id="key-input" placeholder="Colle ta clé admin ici" autocomplete="off" />
+  <button type="button" class="abtn" id="key-go">Voir le tableau de bord</button>
+  <p class="err" id="key-err"></p>
+</div>
+
+<div class="adash" id="dash" style="display:none">
+  <div class="atop">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p class="sub">Commandes et statistiques de vente — données de la maquette Middlwear.</p>
+    </div>
+    <button type="button" class="abtn" id="refresh">Rafraîchir</button>
+  </div>
+
+  <div class="atiles" id="tiles"></div>
+
+  <div class="apanel">
+    <h2>Meilleures ventes</h2>
+    <div id="topwrap"></div>
+  </div>
+
+  <div class="apanel">
+    <h2>Commandes récentes</h2>
+    <div id="orderswrap"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => Math.round(n).toLocaleString("fr-FR") + " Dh";
+  const KEY_STORE = "mw_admin_key";
+
+  async function call(path) {
+    const key = sessionStorage.getItem(KEY_STORE);
+    const r = await fetch(path, { headers: { "x-admin-key": key || "" } });
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      const err = new Error(data.error || ("Erreur " + r.status));
+      err.status = r.status;
+      throw err;
+    }
+    return r.json();
+  }
+
+  function renderTiles(stats) {
+    $("tiles").innerHTML = `
+      <div class="atile"><strong>${stats.totalOrders}</strong><span>Commandes</span></div>
+      <div class="atile"><strong>${fmt(stats.totalRevenue)}</strong><span>Chiffre d'affaires</span></div>
+      <div class="atile"><strong>${fmt(stats.avgOrderValue)}</strong><span>Panier moyen</span></div>
+      <div class="atile"><strong>${stats.ordersToday}</strong><span>Commandes aujourd'hui</span></div>
+    `;
+    $("topwrap").innerHTML = stats.topProducts.length ? `
+      <table class="atbl"><thead><tr><th>Produit</th><th>Qté vendue</th><th>Revenu</th></tr></thead>
+      <tbody>${stats.topProducts.map((p) => `<tr><td class="hi">${p.name}</td><td>${p.qty}</td><td>${fmt(p.revenue)}</td></tr>`).join("")}</tbody></table>
+    ` : `<div class="aempty">Aucune vente pour l'instant.</div>`;
+  }
+
+  function renderOrders(list) {
+    $("orderswrap").innerHTML = list.length ? `
+      <table class="atbl"><thead><tr><th>Réf.</th><th>Client</th><th>Ville</th><th>Articles</th><th>Total</th><th>Date</th></tr></thead>
+      <tbody>${list.map((o) => `
+        <tr>
+          <td class="hi">${o.ref}</td>
+          <td>${o.customer}${o.user ? ` <span style="color:var(--text-low)">(${o.user})</span>` : ""}</td>
+          <td>${o.city || "—"}</td>
+          <td>${o.items.map((i) => i.name + " ×" + i.qty).join(", ")}</td>
+          <td class="hi">${fmt(o.total)}</td>
+          <td>${o.createdAt}</td>
+        </tr>`).join("")}</tbody></table>
+    ` : `<div class="aempty">Aucune commande pour l'instant — passe une commande de test sur le site pour la voir apparaître ici.</div>`;
+  }
+
+  async function load() {
+    try {
+      const [stats, ordersRes] = await Promise.all([call("/api/stats"), call("/api/orders")]);
+      renderTiles(stats);
+      renderOrders(ordersRes.orders);
+      $("gate").style.display = "none";
+      $("dash").style.display = "block";
+    } catch (e) {
+      if (e.status === 403 || e.status === 503) {
+        sessionStorage.removeItem(KEY_STORE);
+        $("gate").style.display = "block";
+        $("dash").style.display = "none";
+        $("key-err").textContent = e.message;
+      }
+    }
+  }
+
+  $("key-go").addEventListener("click", () => {
+    sessionStorage.setItem(KEY_STORE, $("key-input").value.trim());
+    load();
+  });
+  $("key-input").addEventListener("keydown", (e) => { if (e.key === "Enter") $("key-go").click(); });
+  $("refresh").addEventListener("click", load);
+
+  if (sessionStorage.getItem(KEY_STORE)) load();
+})();
+</script>
+</body>
+</html>
