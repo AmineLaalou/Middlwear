@@ -324,15 +324,18 @@ header.hdr.scrolled { padding: 9px 0; background: rgba(4,6,12,.85); }
 }
 @keyframes float-y { 0%,100%{transform:translateY(-8px);} 50%{transform:translateY(8px);} }
 
-/* Picks flottants aux 4 coins de la boule — vraies photos, filtrent la boutique au clic */
+/* Orbite de photos autour de la boule — gravitent en continu, vraies photos,
+   filtrent la boutique au clic. Position pilotée en JS (js/app.js, initHeroOrbit)
+   via transform inline, pour un mouvement circulaire fluide sans conflit avec
+   les transitions/hover CSS. */
+.hero-orbit { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .hero-pick {
   --rx: 0deg; --ry: 0deg;
-  position: absolute; width: 96px; height: 96px; border-radius: 26px; z-index: 3;
-  padding: 0; overflow: hidden; cursor: pointer;
+  position: absolute; top: 50%; left: 50%; width: 128px; height: 128px; border-radius: 30px;
+  padding: 0; overflow: hidden; cursor: pointer; pointer-events: auto;
   background: var(--bg-elev-2); border: 1px solid var(--glass-border-hi);
   box-shadow: 0 10px 26px -14px rgba(0,0,0,.7);
-  transition: box-shadow .3s var(--ease), border-color .3s;
-  animation: hp-float 5.5s ease-in-out infinite;
+  transition: box-shadow .3s var(--ease), border-color .3s, width .3s var(--ease), height .3s var(--ease);
 }
 .hp-photo { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
 .hp-photo::after {
@@ -342,18 +345,10 @@ header.hdr.scrolled { padding: 9px 0; background: rgba(4,6,12,.85); }
 }
 .hero-pick img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--ease); }
 .hero-pick:hover img, .hero-pick:focus-visible img { transform: scale(1.14); }
-.hero-pick:hover, .hero-pick:focus-visible {
-  animation: none;
-  transform: perspective(700px) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.13) translateY(-5px);
+.hero-pick.hovered {
   border-color: var(--teal);
-  box-shadow: 0 20px 40px -16px rgba(34,240,196,.55);
+  box-shadow: 0 20px 44px -16px rgba(34,240,196,.6);
 }
-.hero-pick:active { transform: perspective(700px) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.04); }
-.hp-tl { top: 0%; left: -4%; animation-delay: 0s; }
-.hp-tr { top: 0%; right: -4%; animation-delay: 1.3s; }
-.hp-bl { bottom: 2%; left: -4%; animation-delay: 2.4s; }
-.hp-br { bottom: 2%; right: -4%; animation-delay: 3.6s; }
-@keyframes hp-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 .hp-label {
   position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
   font-family: var(--f-mono); font-size: 10px; letter-spacing: .04em; white-space: nowrap;
@@ -361,7 +356,7 @@ header.hdr.scrolled { padding: 9px 0; background: rgba(4,6,12,.85); }
 }
 .hero-pick:hover .hp-label, .hero-pick:focus-visible .hp-label { opacity: 1; }
 @media (max-width: 640px) {
-  .hero-pick { width: 60px; height: 60px; border-radius: 18px; }
+  .hero-pick { width: 76px; height: 76px; border-radius: 20px; }
   .hp-label { display: none; }
 }
 

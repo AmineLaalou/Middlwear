@@ -203,30 +203,71 @@
     render();
   });
 
-  /* ============ PICKS HERO (boule) ============ */
-  document.querySelectorAll(".hero-pick[data-cat]").forEach((btn) => {
-    if (!reduced && !window.matchMedia("(pointer: coarse)").matches) {
-      btn.addEventListener("mousemove", (e) => {
-        const r = btn.getBoundingClientRect();
+  /* ============ ORBITE HERO — les photos gravitent autour de la boule ============ */
+  function initHeroOrbit() {
+    const wrap = $("hero-orbit");
+    if (!wrap) return;
+    const items = Array.from(wrap.querySelectorAll(".hero-pick"));
+    if (!items.length) return;
+
+    const N = items.length;
+    const baseAngles = items.map((_, i) => (i / N) * Math.PI * 2 - Math.PI / 2);
+    const PERIOD_MS = 42000; // un tour complet toutes les 42s — lent et élégant
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    let hovered = -1;
+    const curScale = items.map(() => 1);
+
+    items.forEach((el, i) => {
+      el.dataset.x = 0; el.dataset.y = 0;
+
+      el.addEventListener("click", () => {
+        state.cat = el.dataset.cat;
+        state.icon = el.dataset.ic || null;
+        state.q = ""; $("q").value = "";
+        $("chips").querySelectorAll(".chip").forEach((x) => x.classList.toggle("on", x.dataset.cat === state.cat));
+        render();
+        $("shop").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      });
+
+      if (coarse) return; // pas de survol sur tactile — le tap suffit pour filtrer
+      el.addEventListener("mouseenter", () => { hovered = i; el.classList.add("hovered"); });
+      el.addEventListener("mouseleave", () => {
+        if (hovered === i) hovered = -1;
+        el.classList.remove("hovered");
+        el.style.setProperty("--rx", "0deg");
+        el.style.setProperty("--ry", "0deg");
+      });
+      el.addEventListener("mousemove", (e) => {
+        const r = el.getBoundingClientRect();
         const px = (e.clientX - r.left) / r.width - 0.5;
         const py = (e.clientY - r.top) / r.height - 0.5;
-        btn.style.setProperty("--ry", (px * 22).toFixed(2) + "deg");
-        btn.style.setProperty("--rx", (-py * 22).toFixed(2) + "deg");
+        el.style.setProperty("--ry", (px * 20).toFixed(2) + "deg");
+        el.style.setProperty("--rx", (-py * 20).toFixed(2) + "deg");
       });
-      btn.addEventListener("mouseleave", () => {
-        btn.style.setProperty("--rx", "0deg");
-        btn.style.setProperty("--ry", "0deg");
+    });
+
+    function place(now) {
+      const factor = window.innerWidth <= 640 ? 0.72 : 0.9;
+      const r = Math.min(wrap.clientWidth, wrap.clientHeight) / 2 * factor;
+      const spin = reduced ? 0 : (now / PERIOD_MS) * Math.PI * 2;
+      items.forEach((el, i) => {
+        if (i !== hovered) {
+          const a = baseAngles[i] + spin;
+          el.dataset.x = Math.cos(a) * r;
+          el.dataset.y = Math.sin(a) * r;
+        }
+        const target = i === hovered ? 1.16 : 1;
+        curScale[i] += (target - curScale[i]) * 0.14;
+        el.style.transform =
+          `translate(${el.dataset.x}px, ${el.dataset.y}px) translate(-50%,-50%) ` +
+          `perspective(700px) rotateX(var(--rx)) rotateY(var(--ry)) scale(${curScale[i].toFixed(3)})`;
       });
     }
-    btn.addEventListener("click", () => {
-      state.cat = btn.dataset.cat;
-      state.icon = btn.dataset.ic || null;
-      state.q = ""; $("q").value = "";
-      $("chips").querySelectorAll(".chip").forEach((x) => x.classList.toggle("on", x.dataset.cat === state.cat));
-      render();
-      $("shop").scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-    });
-  });
+
+    if (reduced) { place(0); return; }
+    (function loop(t) { requestAnimationFrame(loop); place(t); })(0);
+  }
+  initHeroOrbit();
 
   $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
 
