@@ -37,6 +37,11 @@ servi sur `http://localhost:3000`, avec en plus :
 - Un tableau de bord (`admin.html`) avec les statistiques de vente —
   voir "Commandes & tableau de bord" plus bas
 
+### Partager le site en 1 clic (lien public temporaire)
+- **Windows** : double-clic sur `share.bat`
+
+Lance le mode complet et ouvre un tunnel gratuit ([Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/), aucun compte requis) : tu obtiens un lien `https://xxx.trycloudflare.com` utilisable depuis n'importe quel appareil, à envoyer tel quel à des amis. Il reste actif tant que les deux fenêtres ouvertes par le script restent ouvertes sur ton PC — ferme-les pour couper le partage. Pour un lien permanent (indépendant de ton PC), voir `DEPLOIEMENT.md`.
+
 ## Nouveautés de cette version
 - **Ton logo** partout : intro, header, hero flottant, footer
 - **Curseur Économique ⇄ Performance** sous la recherche : à gauche le
