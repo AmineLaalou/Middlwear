@@ -10,8 +10,8 @@ licence libre. Retouches faites ici : recadrage carré + redimensionnement
   par Tiia Monto, licence CC BY-SA 4.0.
 - **watch.jpg** — d'après [File:Smartwatch.jpg](https://commons.wikimedia.org/wiki/File:Smartwatch.jpg),
   licence CC BY-SA 4.0.
-- **glasses.jpg** — d'après [File:Google_Glass_Explorer_Edition.jpeg](https://commons.wikimedia.org/wiki/File:Google_Glass_Explorer_Edition.jpeg)
-  par Ted Eytan, licence CC BY-SA 2.0.
+- **glasses.jpg** — d'après [File:Google_Glass_with_frame.jpg](https://commons.wikimedia.org/wiki/File:Google_Glass_with_frame.jpg)
+  par Mikepanhu, licence CC BY-SA 3.0.
 
 Les fichiers originaux (non recadrés, plusieurs Mo chacun) ne sont pas
 conservés dans ce dossier pour garder le dépôt léger — ils restent
