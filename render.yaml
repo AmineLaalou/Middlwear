@@ -1,0 +1,21 @@
+# Blueprint Render — permet un déploiement en quelques clics :
+# https://dashboard.render.com/blueprints → connecter le repo GitHub
+# → Render détecte ce fichier et pré-remplit tout automatiquement.
+# JWT_SECRET et ADMIN_KEY sont générées aléatoirement par Render, jamais
+# stockées ici. Les clés OAuth (Google/Facebook/Instagram) restent à
+# ajouter manuellement dans Environment si tu veux les activer.
+services:
+  - type: web
+    name: middlwear
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: BASE_URL
+        value: https://middlwear.onrender.com
