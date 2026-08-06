@@ -43,8 +43,8 @@
   const CATEGORY_PHOTOS = {
     laptop: "assets/photos/laptop.png",
     scooter: "assets/photos/scooter.png",
-    watch: "assets/photos/watch.jpg",
-    glasses: "assets/photos/glasses.jpg"
+    watch: "assets/photos/watch.png",
+    glasses: "assets/photos/glasses.png"
   };
   const fmt = (n) => n.toLocaleString("fr-FR") + " Dh";
 

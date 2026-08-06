@@ -1,6 +1,6 @@
 /* MIDDLWEAR — catalogue
-   Prix en MAD, calés sur un benchmark du marché marocain
-   (Jumia.ma / Electroplanet.ma, consulté août 2026).
+   Prix en MAD, à l'image de la meilleure affaire dénichée chez des
+   fournisseurs à travers le monde (démo, prix indicatifs).
    `perf` = indice de performance 0-100 (0 = entrée de gamme économique,
    100 = haut de gamme performance). Utilisé par le curseur Économique ⇄ Performance. */
 
