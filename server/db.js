@@ -42,10 +42,21 @@ db.exec(`
   );
 `);
 
-// Migration : la colonne status a été ajoutée après la création initiale de la table.
+// Migrations : colonnes ajoutées après la création initiale de la table.
 const ORDER_COLUMNS = db.prepare("PRAGMA table_info(orders)").all().map((c) => c.name);
 if (!ORDER_COLUMNS.includes("status")) {
   db.exec("ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'");
+}
+if (!ORDER_COLUMNS.includes("payment_provider")) {
+  // 'demo' = maquette existante (aucun vrai paiement) — voir README/DEPLOIEMENT.
+  db.exec("ALTER TABLE orders ADD COLUMN payment_provider TEXT NOT NULL DEFAULT 'demo'");
+}
+if (!ORDER_COLUMNS.includes("payment_status")) {
+  db.exec("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'paid'");
+}
+if (!ORDER_COLUMNS.includes("payment_ref")) {
+  db.exec("ALTER TABLE orders ADD COLUMN payment_ref TEXT");
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_payment_ref ON orders(payment_ref) WHERE payment_ref IS NOT NULL");
 }
 
 const ORDER_STATUSES = ["pending", "shipped", "delivered"];
@@ -89,12 +100,28 @@ function upsertOAuthUser({ provider, providerId, email, name, avatarUrl }) {
   return findById(Number(info.lastInsertRowid));
 }
 
-function createOrder({ orderRef, userId, customerName, customerPhone, customerCity, customerAddress, items, subtotal, shipping, total }) {
+function createOrder({
+  orderRef, userId, customerName, customerPhone, customerCity, customerAddress, items, subtotal, shipping, total,
+  paymentProvider = "demo", paymentStatus = "paid", paymentRef = null
+}) {
   db.prepare(`
-    INSERT INTO orders (order_ref, user_id, customer_name, customer_phone, customer_city, customer_address, items_json, subtotal, shipping, total)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(orderRef, userId || null, customerName, customerPhone || null, customerCity || null, customerAddress || null, JSON.stringify(items), subtotal, shipping, total);
+    INSERT INTO orders (order_ref, user_id, customer_name, customer_phone, customer_city, customer_address, items_json, subtotal, shipping, total, payment_provider, payment_status, payment_ref)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(orderRef, userId || null, customerName, customerPhone || null, customerCity || null, customerAddress || null, JSON.stringify(items), subtotal, shipping, total, paymentProvider, paymentStatus, paymentRef);
   return db.prepare("SELECT * FROM orders WHERE order_ref = ?").get(orderRef);
+}
+
+function findOrderByPaymentRef(paymentRef) {
+  return db.prepare("SELECT * FROM orders WHERE payment_ref = ?").get(paymentRef) || null;
+}
+
+// Marque une commande Stripe comme payée une fois le paiement confirmé (webhook ou
+// vérification côté succès). Idempotent : appeler deux fois ne fait rien la seconde fois.
+function markOrderPaid(paymentRef) {
+  const order = findOrderByPaymentRef(paymentRef);
+  if (!order || order.payment_status === "paid") return order;
+  db.prepare("UPDATE orders SET payment_status = 'paid' WHERE payment_ref = ?").run(paymentRef);
+  return findOrderByPaymentRef(paymentRef);
 }
 
 function listOrders() {
@@ -116,7 +143,9 @@ function listUsers() {
 }
 
 function getStats() {
-  const orders = listOrders();
+  // Seules les commandes réellement payées comptent dans les stats — une session
+  // Stripe créée mais abandonnée (payment_status = 'awaiting_payment') n'est pas une vente.
+  const orders = listOrders().filter((o) => o.payment_status === "paid");
   const totalOrders = orders.length;
   const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
   const avgOrderValue = totalOrders ? Math.round(totalRevenue / totalOrders) : 0;
@@ -141,5 +170,6 @@ function getStats() {
 
 module.exports = {
   db, findByEmail, findByProvider, findById, createLocalUser, upsertOAuthUser,
-  createOrder, listOrders, updateOrderStatus, listUsers, getStats, ORDER_STATUSES
+  createOrder, listOrders, updateOrderStatus, listUsers, getStats, ORDER_STATUSES,
+  findOrderByPaymentRef, markOrderPaid
 };

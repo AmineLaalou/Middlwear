@@ -389,7 +389,13 @@
 
   /* ============ CHECKOUT ============ */
   let step = 1;
+  let stripeEnabled = false;
   const modal = $("cmodal");
+
+  fetch("/api/stripe/config", { credentials: "include" })
+    .then((r) => r.json())
+    .then((d) => { stripeEnabled = Boolean(d.enabled); })
+    .catch(() => { stripeEnabled = false; }); // backend indisponible ou Stripe non configuré : flux maquette inchangé
 
   function openCheckout() {
     if (!count()) return;
@@ -420,6 +426,14 @@
       el.classList.toggle("act", i + 1 === step);
     });
     $("cnav").style.display = step === 3 ? "none" : "flex";
+
+    if (step === 2) {
+      $("st2-stripe").style.display = stripeEnabled ? "block" : "none";
+      $("st2-demo").style.display = stripeEnabled ? "none" : "block";
+      $("cnext").textContent = stripeEnabled ? "Payer avec Stripe" : "Continuer";
+    } else if (step === 1) {
+      $("cnext").textContent = "Continuer";
+    }
   }
 
   function checkShipping() {
@@ -455,8 +469,43 @@
     return ok;
   }
 
+  async function payWithStripe() {
+    const ls = lines();
+    const sub = subtotal(), ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
+    const errEl = $("stripe-err");
+    errEl.style.display = "none";
+    $("cnext").disabled = true;
+    $("cnext").textContent = "Redirection…";
+    try {
+      const r = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          items: ls.map((l) => ({ id: l.p.id, name: l.p.name, price: l.p.price, qty: l.q })),
+          shipping: {
+            name: $("f-name").value.trim(),
+            phone: $("f-phone").value.trim(),
+            city: $("f-city").value.trim(),
+            address: $("f-addr").value.trim()
+          },
+          subtotal: sub, shippingCost: ship, total: sub + ship
+        })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.url) throw new Error(data.error || "Impossible de démarrer le paiement Stripe.");
+      window.location.href = data.url; // redirection vers la page de paiement hébergée par Stripe
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+      $("cnext").disabled = false;
+      $("cnext").textContent = "Payer avec Stripe";
+    }
+  }
+
   $("cnext").addEventListener("click", () => {
     if (step === 1) { if (!checkShipping()) return; step = 2; }
+    else if (step === 2 && stripeEnabled) { payWithStripe(); return; }
     else if (step === 2) {
       if (!checkPayment()) return;
       step = 3;
@@ -539,6 +588,39 @@
   window.addEventListener("scroll", () => {
     hdr.classList.toggle("scrolled", window.scrollY > 40);
   }, { passive: true });
+
+  /* ============ RETOUR STRIPE ============ */
+  // Après paiement, Stripe redirige vers "/?stripe=success&session_id=..." (ou stripe=cancel).
+  // La commande est déjà enregistrée côté serveur (webhook ou vérification ci-dessous) —
+  // ce bloc ne fait qu'informer l'utilisateur et nettoyer l'URL/le panier.
+  (async () => {
+    const params = new URLSearchParams(location.search);
+    const outcome = params.get("stripe");
+    if (!outcome) return;
+
+    if (outcome === "success") {
+      const sessionId = params.get("session_id");
+      try {
+        const r = await fetch(`/api/stripe/verify-session/${encodeURIComponent(sessionId || "")}`, { credentials: "include" });
+        const data = await r.json();
+        if (data.paid) {
+          Object.keys(cart).forEach((k) => delete cart[k]);
+          renderCart();
+          toast(`Paiement confirmé — commande ${data.orderRef || ""} enregistrée`);
+        } else {
+          toast("Paiement non confirmé pour l'instant, réessaie dans un instant.");
+        }
+      } catch {
+        toast("Paiement effectué, mais impossible de confirmer avec le serveur.");
+      }
+    } else if (outcome === "cancel") {
+      toast("Paiement annulé.");
+    }
+
+    params.delete("stripe"); params.delete("session_id");
+    const clean = location.pathname + (params.toString() ? `?${params}` : "") + location.hash;
+    history.replaceState({}, "", clean);
+  })();
 
   /* ============ INIT ============ */
   axisEl.value = 50;

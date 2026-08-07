@@ -158,9 +158,18 @@
     ` : `<div class="aempty">Aucune vente pour l'instant.</div>`;
   }
 
+  function paymentBadge(o) {
+    if (o.paymentProvider === "stripe") {
+      return o.paymentStatus === "paid"
+        ? `<span style="color:var(--teal)">Stripe · payé</span>`
+        : `<span style="color:var(--pink)">Stripe · en attente</span>`;
+    }
+    return `<span style="color:var(--text-low)">Démo</span>`;
+  }
+
   function renderOrders(list) {
     $("orderswrap").innerHTML = list.length ? `
-      <table class="atbl"><thead><tr><th>Réf.</th><th>Client</th><th>Ville</th><th>Articles</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead>
+      <table class="atbl"><thead><tr><th>Réf.</th><th>Client</th><th>Ville</th><th>Articles</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Date</th></tr></thead>
       <tbody>${list.map((o) => `
         <tr>
           <td class="hi">${o.ref}</td>
@@ -168,6 +177,7 @@
           <td>${o.city || "—"}</td>
           <td>${o.items.map((i) => i.name + " ×" + i.qty).join(", ")}</td>
           <td class="hi">${fmt(o.total)}</td>
+          <td>${paymentBadge(o)}</td>
           <td>
             <select class="asel status-${o.status}" data-ref="${o.ref}">
               ${Object.entries(STATUS_LABELS).map(([v, l]) => `<option value="${v}" ${v === o.status ? "selected" : ""}>${l}</option>`).join("")}
@@ -212,11 +222,13 @@
 
   function exportCSV() {
     const rows = applyFilters();
-    const header = ["Réf.", "Client", "Téléphone", "Ville", "Adresse", "Articles", "Sous-total", "Livraison", "Total", "Statut", "Date", "Compte"];
+    const header = ["Réf.", "Client", "Téléphone", "Ville", "Adresse", "Articles", "Sous-total", "Livraison", "Total", "Paiement", "Statut", "Date", "Compte"];
     const lines = rows.map((o) => [
       o.ref, o.customer, o.phone || "", o.city || "", o.address || "",
       o.items.map((i) => `${i.name} x${i.qty}`).join(" | "),
-      o.subtotal, o.shipping, o.total, STATUS_LABELS[o.status] || o.status, o.createdAt, o.user || ""
+      o.subtotal, o.shipping, o.total,
+      o.paymentProvider === "stripe" ? (o.paymentStatus === "paid" ? "Stripe (payé)" : "Stripe (en attente)") : "Démo",
+      STATUS_LABELS[o.status] || o.status, o.createdAt, o.user || ""
     ]);
     const csv = [header, ...lines]
       .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))

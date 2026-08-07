@@ -264,24 +264,39 @@
 
         <div id="st2" style="display:none">
           <h3><span id="i-card"></span>Paiement</h3>
-          <div class="demo-banner">
-            <span id="i-warn"></span>
-            <div>
-              <strong>Ceci est une maquette — n'entrez pas de vraie carte.</strong>
-              Aucun paiement n'est traité et aucune donnée ne quitte votre navigateur.
-              Utilisez le numéro de test <button type="button" class="fill-demo" id="fill-demo">remplir automatiquement</button>
+
+          <div id="st2-stripe" style="display:none">
+            <div class="demo-banner" style="border-color:var(--teal)">
+              <span id="i-lock"></span>
+              <div>
+                <strong>Paiement sécurisé par Stripe.</strong>
+                En cliquant sur "Payer avec Stripe", tu seras redirigé(e) vers la page de paiement
+                sécurisée de Stripe. Aucune donnée de carte ne transite par ce site.
+              </div>
             </div>
+            <p id="stripe-err" class="em" style="display:none;margin-top:10px"></p>
           </div>
-          <div class="cardv">
-            <div class="chp"></div>
-            <div class="nm" id="v-num">•••• •••• •••• ••••</div>
-            <div class="mt"><span id="v-name">VOTRE NOM</span><span id="v-exp">MM/AA</span></div>
-          </div>
-          <div class="fg">
-            <div class="fld full"><label for="p-name">Nom sur la carte</label><input type="text" id="p-name" placeholder="Carte de test uniquement" /><span class="em">Nom invalide</span></div>
-            <div class="fld full"><label for="p-num">Numéro de carte</label><input type="text" id="p-num" placeholder="Numéro de test — pas de vraie carte" inputmode="numeric" /><span class="em">Numéro invalide</span></div>
-            <div class="fld"><label for="p-exp">Expiration</label><input type="text" id="p-exp" placeholder="MM/AA" inputmode="numeric" /><span class="em">Format MM/AA</span></div>
-            <div class="fld"><label for="p-cvc">CVC</label><input type="text" id="p-cvc" placeholder="123" inputmode="numeric" maxlength="4" /><span class="em">3 à 4 chiffres</span></div>
+
+          <div id="st2-demo">
+            <div class="demo-banner">
+              <span id="i-warn"></span>
+              <div>
+                <strong>Ceci est une maquette — n'entrez pas de vraie carte.</strong>
+                Aucun paiement n'est traité et aucune donnée ne quitte votre navigateur.
+                Utilisez le numéro de test <button type="button" class="fill-demo" id="fill-demo">remplir automatiquement</button>
+              </div>
+            </div>
+            <div class="cardv">
+              <div class="chp"></div>
+              <div class="nm" id="v-num">•••• •••• •••• ••••</div>
+              <div class="mt"><span id="v-name">VOTRE NOM</span><span id="v-exp">MM/AA</span></div>
+            </div>
+            <div class="fg">
+              <div class="fld full"><label for="p-name">Nom sur la carte</label><input type="text" id="p-name" placeholder="Carte de test uniquement" /><span class="em">Nom invalide</span></div>
+              <div class="fld full"><label for="p-num">Numéro de carte</label><input type="text" id="p-num" placeholder="Numéro de test — pas de vraie carte" inputmode="numeric" /><span class="em">Numéro invalide</span></div>
+              <div class="fld"><label for="p-exp">Expiration</label><input type="text" id="p-exp" placeholder="MM/AA" inputmode="numeric" /><span class="em">Format MM/AA</span></div>
+              <div class="fld"><label for="p-cvc">CVC</label><input type="text" id="p-cvc" placeholder="123" inputmode="numeric" maxlength="4" /><span class="em">3 à 4 chiffres</span></div>
+            </div>
           </div>
         </div>
 

@@ -57,6 +57,8 @@ router.get("/orders", requireAdmin, (req, res) => {
     shipping: o.shipping,
     total: o.total,
     status: o.status,
+    paymentProvider: o.payment_provider,
+    paymentStatus: o.payment_status,
     createdAt: o.created_at,
     user: o.user_id ? (findById(o.user_id) || {}).email || null : null
   }));
