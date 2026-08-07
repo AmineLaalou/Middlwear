@@ -106,11 +106,11 @@ git push
   (pas de backend à contacter) — voir niveaux 4/5 pour l'activer.
 
 ## Rappel important
-Le tunnel de paiement reste une **maquette**, même en mode complet (comptes
-réels) : un bandeau le signale sur l'écran de paiement, et un bouton remplit
-automatiquement une carte de test. Aucune carte n'est débitée. Pour de vrais
-paiements il faudra brancher CMI / Stripe avec un compte marchand — hors
-scope de ce site pour l'instant.
+Sans clé Stripe configurée, le tunnel de paiement reste une **maquette** :
+un bandeau le signale sur l'écran de paiement, et un bouton remplit
+automatiquement une carte de test — aucune carte n'est débitée. Une
+intégration Stripe réelle est prête côté code (voir `GUIDE-NOUVEAUTES.md`) ;
+il suffit d'y renseigner tes propres clés pour l'activer.
 
 ---
 
