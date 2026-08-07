@@ -49,7 +49,27 @@
     font-family: inherit; transition: border-color .2s, background .2s;
   }
   .abtn:hover { border-color: var(--glass-border-hi); background: var(--glass-strong); }
+  .abtn:disabled { opacity: .5; cursor: not-allowed; }
   .atop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; gap: 12px; }
+  .apanel-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .apanel-head h2 { margin: 0; }
+
+  .atoolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .atoolbar input {
+    background: var(--bg-elev-2); border: 1px solid var(--glass-border); border-radius: 8px;
+    color: var(--text-hi); font-family: var(--f-mono); font-size: 12.5px; padding: 8px 12px;
+  }
+  .atoolbar input:focus { outline: none; border-color: var(--teal); }
+  .atoolbar input[type="text"] { min-width: 200px; flex: 1; }
+  .atoolbar .aclear { background: none; border: none; color: var(--text-low); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px; }
+
+  .asel {
+    background: var(--bg-elev-2); border: 1px solid var(--glass-border); border-radius: 6px;
+    color: var(--text-hi); font-family: inherit; font-size: 12px; padding: 5px 8px; cursor: pointer;
+  }
+  .asel.status-pending { color: var(--text-mid); }
+  .asel.status-shipped { color: var(--teal); }
+  .asel.status-delivered { color: var(--violet); }
 </style>
 </head>
 <body>
@@ -81,8 +101,22 @@
   </div>
 
   <div class="apanel">
-    <h2>Commandes récentes</h2>
+    <div class="apanel-head">
+      <h2>Commandes récentes</h2>
+      <button type="button" class="abtn" id="export-csv">Exporter en CSV</button>
+    </div>
+    <div class="atoolbar">
+      <input type="text" id="f-search" placeholder="Rechercher (réf., client, ville)" autocomplete="off" />
+      <input type="date" id="f-from" title="Du" />
+      <input type="date" id="f-to" title="Au" />
+      <button type="button" class="aclear" id="f-clear">Réinitialiser</button>
+    </div>
     <div id="orderswrap"></div>
+  </div>
+
+  <div class="apanel">
+    <h2>Utilisateurs inscrits</h2>
+    <div id="userswrap"></div>
   </div>
 </div>
 
@@ -92,10 +126,15 @@
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => Math.round(n).toLocaleString("fr-FR") + " Dh";
   const KEY_STORE = "mw_admin_key";
+  const STATUS_LABELS = { pending: "En attente", shipped: "Expédiée", delivered: "Livrée" };
+  let allOrders = [];
 
-  async function call(path) {
+  async function call(path, opts) {
     const key = sessionStorage.getItem(KEY_STORE);
-    const r = await fetch(path, { headers: { "x-admin-key": key || "" } });
+    const r = await fetch(path, {
+      ...opts,
+      headers: { "x-admin-key": key || "", ...(opts && opts.headers) }
+    });
     if (!r.ok) {
       const data = await r.json().catch(() => ({}));
       const err = new Error(data.error || ("Erreur " + r.status));
@@ -105,12 +144,13 @@
     return r.json();
   }
 
-  function renderTiles(stats) {
+  function renderTiles(stats, userCount) {
     $("tiles").innerHTML = `
       <div class="atile"><strong>${stats.totalOrders}</strong><span>Commandes</span></div>
       <div class="atile"><strong>${fmt(stats.totalRevenue)}</strong><span>Chiffre d'affaires</span></div>
       <div class="atile"><strong>${fmt(stats.avgOrderValue)}</strong><span>Panier moyen</span></div>
       <div class="atile"><strong>${stats.ordersToday}</strong><span>Commandes aujourd'hui</span></div>
+      <div class="atile"><strong>${userCount}</strong><span>Utilisateurs inscrits</span></div>
     `;
     $("topwrap").innerHTML = stats.topProducts.length ? `
       <table class="atbl"><thead><tr><th>Produit</th><th>Qté vendue</th><th>Revenu</th></tr></thead>
@@ -120,7 +160,7 @@
 
   function renderOrders(list) {
     $("orderswrap").innerHTML = list.length ? `
-      <table class="atbl"><thead><tr><th>Réf.</th><th>Client</th><th>Ville</th><th>Articles</th><th>Total</th><th>Date</th></tr></thead>
+      <table class="atbl"><thead><tr><th>Réf.</th><th>Client</th><th>Ville</th><th>Articles</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead>
       <tbody>${list.map((o) => `
         <tr>
           <td class="hi">${o.ref}</td>
@@ -128,16 +168,92 @@
           <td>${o.city || "—"}</td>
           <td>${o.items.map((i) => i.name + " ×" + i.qty).join(", ")}</td>
           <td class="hi">${fmt(o.total)}</td>
+          <td>
+            <select class="asel status-${o.status}" data-ref="${o.ref}">
+              ${Object.entries(STATUS_LABELS).map(([v, l]) => `<option value="${v}" ${v === o.status ? "selected" : ""}>${l}</option>`).join("")}
+            </select>
+          </td>
           <td>${o.createdAt}</td>
         </tr>`).join("")}</tbody></table>
-    ` : `<div class="aempty">Aucune commande pour l'instant — passe une commande de test sur le site pour la voir apparaître ici.</div>`;
+    ` : `<div class="aempty">Aucune commande ne correspond aux filtres.</div>`;
+  }
+
+  function renderUsers(users) {
+    $("userswrap").innerHTML = users.length ? `
+      <table class="atbl"><thead><tr><th>Nom</th><th>Email</th><th>Connexion</th><th>Commandes</th><th>Inscrit le</th></tr></thead>
+      <tbody>${users.map((u) => `
+        <tr>
+          <td class="hi">${u.name || "—"}</td>
+          <td>${u.email || "—"}</td>
+          <td>${u.provider}</td>
+          <td>${u.orderCount}</td>
+          <td>${u.createdAt}</td>
+        </tr>`).join("")}</tbody></table>
+    ` : `<div class="aempty">Aucun utilisateur inscrit pour l'instant.</div>`;
+  }
+
+  function applyFilters() {
+    const q = $("f-search").value.trim().toLowerCase();
+    const from = $("f-from").value; // YYYY-MM-DD
+    const to = $("f-to").value;
+    const filtered = allOrders.filter((o) => {
+      if (q) {
+        const hay = `${o.ref} ${o.customer} ${o.city || ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      const day = o.createdAt.slice(0, 10);
+      if (from && day < from) return false;
+      if (to && day > to) return false;
+      return true;
+    });
+    renderOrders(filtered);
+    return filtered;
+  }
+
+  function exportCSV() {
+    const rows = applyFilters();
+    const header = ["Réf.", "Client", "Téléphone", "Ville", "Adresse", "Articles", "Sous-total", "Livraison", "Total", "Statut", "Date", "Compte"];
+    const lines = rows.map((o) => [
+      o.ref, o.customer, o.phone || "", o.city || "", o.address || "",
+      o.items.map((i) => `${i.name} x${i.qty}`).join(" | "),
+      o.subtotal, o.shipping, o.total, STATUS_LABELS[o.status] || o.status, o.createdAt, o.user || ""
+    ]);
+    const csv = [header, ...lines]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `middlwear-commandes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function updateStatus(ref, status) {
+    try {
+      await call(`/api/orders/${encodeURIComponent(ref)}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      const o = allOrders.find((x) => x.ref === ref);
+      if (o) o.status = status;
+    } catch (e) {
+      alert("Impossible de mettre à jour le statut : " + e.message);
+      applyFilters(); // revert l'affichage
+    }
   }
 
   async function load() {
     try {
-      const [stats, ordersRes] = await Promise.all([call("/api/stats"), call("/api/orders")]);
-      renderTiles(stats);
-      renderOrders(ordersRes.orders);
+      const [stats, ordersRes, usersRes] = await Promise.all([
+        call("/api/stats"), call("/api/orders"), call("/api/users")
+      ]);
+      allOrders = ordersRes.orders;
+      renderTiles(stats, usersRes.users.length);
+      applyFilters();
+      renderUsers(usersRes.users);
       $("gate").style.display = "none";
       $("dash").style.display = "block";
     } catch (e) {
@@ -156,6 +272,24 @@
   });
   $("key-input").addEventListener("keydown", (e) => { if (e.key === "Enter") $("key-go").click(); });
   $("refresh").addEventListener("click", load);
+  $("export-csv").addEventListener("click", exportCSV);
+
+  $("f-search").addEventListener("input", applyFilters);
+  $("f-from").addEventListener("change", applyFilters);
+  $("f-to").addEventListener("change", applyFilters);
+  $("f-clear").addEventListener("click", () => {
+    $("f-search").value = ""; $("f-from").value = ""; $("f-to").value = "";
+    applyFilters();
+  });
+
+  $("orderswrap").addEventListener("change", (e) => {
+    if (e.target.matches("select.asel")) {
+      const ref = e.target.dataset.ref;
+      const status = e.target.value;
+      e.target.className = `asel status-${status}`;
+      updateStatus(ref, status);
+    }
+  });
 
   if (sessionStorage.getItem(KEY_STORE)) load();
 })();

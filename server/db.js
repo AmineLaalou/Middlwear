@@ -42,6 +42,14 @@ db.exec(`
   );
 `);
 
+// Migration : la colonne status a été ajoutée après la création initiale de la table.
+const ORDER_COLUMNS = db.prepare("PRAGMA table_info(orders)").all().map((c) => c.name);
+if (!ORDER_COLUMNS.includes("status")) {
+  db.exec("ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'");
+}
+
+const ORDER_STATUSES = ["pending", "shipped", "delivered"];
+
 function findByEmail(email) {
   return db.prepare("SELECT * FROM users WHERE email = ?").get(email) || null;
 }
@@ -93,6 +101,20 @@ function listOrders() {
   return db.prepare("SELECT * FROM orders ORDER BY created_at DESC").all();
 }
 
+function updateOrderStatus(orderRef, status) {
+  if (!ORDER_STATUSES.includes(status)) return null;
+  db.prepare("UPDATE orders SET status = ? WHERE order_ref = ?").run(status, orderRef);
+  return db.prepare("SELECT * FROM orders WHERE order_ref = ?").get(orderRef);
+}
+
+function listUsers() {
+  return db.prepare(`
+    SELECT id, email, name, provider, avatar_url, created_at,
+      (SELECT COUNT(*) FROM orders WHERE orders.user_id = users.id) AS order_count
+    FROM users ORDER BY created_at DESC
+  `).all();
+}
+
 function getStats() {
   const orders = listOrders();
   const totalOrders = orders.length;
@@ -119,5 +141,5 @@ function getStats() {
 
 module.exports = {
   db, findByEmail, findByProvider, findById, createLocalUser, upsertOAuthUser,
-  createOrder, listOrders, getStats
+  createOrder, listOrders, updateOrderStatus, listUsers, getStats, ORDER_STATUSES
 };

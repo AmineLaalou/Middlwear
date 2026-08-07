@@ -2,7 +2,7 @@
 "use strict";
 
 const { Router } = require("express");
-const { createOrder, listOrders, getStats, findById } = require("../db");
+const { createOrder, listOrders, updateOrderStatus, listUsers, getStats, findById, ORDER_STATUSES } = require("../db");
 const { readUserId } = require("../lib/session");
 const { requireAdmin } = require("../lib/adminAuth");
 
@@ -56,14 +56,38 @@ router.get("/orders", requireAdmin, (req, res) => {
     subtotal: o.subtotal,
     shipping: o.shipping,
     total: o.total,
+    status: o.status,
     createdAt: o.created_at,
     user: o.user_id ? (findById(o.user_id) || {}).email || null : null
   }));
   res.json({ orders });
 });
 
+router.patch("/orders/:ref/status", requireAdmin, (req, res) => {
+  const { status } = req.body || {};
+  if (!ORDER_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Statut invalide (attendu : ${ORDER_STATUSES.join(", ")}).` });
+  }
+  const order = updateOrderStatus(req.params.ref, status);
+  if (!order) return res.status(404).json({ error: "Commande introuvable." });
+  res.json({ ok: true, status: order.status });
+});
+
 router.get("/stats", requireAdmin, (req, res) => {
   res.json(getStats());
+});
+
+router.get("/users", requireAdmin, (req, res) => {
+  const users = listUsers().map((u) => ({
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    provider: u.provider,
+    avatarUrl: u.avatar_url,
+    orderCount: u.order_count,
+    createdAt: u.created_at
+  }));
+  res.json({ users });
 });
 
 module.exports = router;
