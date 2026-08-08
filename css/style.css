@@ -740,6 +740,53 @@ footer.ftr { border-top: 1px solid rgba(255,255,255,.06); padding: 40px 0 46px; 
 /* ============================================================
    COMPTE (connexion / inscription / OAuth)
    ============================================================ */
+/* ============================================================
+   FICHE PRODUIT
+   ============================================================ */
+.pmodal {
+  position: fixed; z-index: 80; top: 50%; left: 50%; transform: translate(-50%,-46%);
+  width: min(760px, calc(100vw - 32px));
+  background: var(--bg-elev-1); border: 1px solid var(--glass-border-hi); border-radius: var(--r-xl);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .3s var(--ease), visibility .3s, transform .3s var(--ease);
+  max-height: 90vh; overflow-y: auto;
+}
+.pmodal.on { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%,-50%); }
+#povl { z-index: 79; }
+.pm-close { position: absolute; top: 14px; right: 14px; z-index: 2; }
+
+.pm-body { display: grid; grid-template-columns: 1fr 1fr; }
+@media (max-width: 720px) { .pm-body { grid-template-columns: 1fr; } }
+
+.pm-visual {
+  display: grid; place-items: center; padding: 34px 26px; min-height: 240px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(34,240,196,.10), transparent 68%);
+  border-right: 1px solid var(--glass-border);
+}
+@media (max-width: 720px) { .pm-visual { border-right: none; border-bottom: 1px solid var(--glass-border); min-height: 180px; } }
+.pm-visual img { width: min(100%, 260px); height: auto; filter: drop-shadow(0 18px 34px rgba(0,0,0,.5)); }
+.pm-visual svg { width: 108px; height: 108px; color: var(--teal); }
+
+.pm-info { padding: 30px 28px 28px; display: flex; flex-direction: column; gap: 14px; }
+.pm-eyebrow { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-low); }
+.pm-info h3 { font-family: var(--f-display); font-size: 22px; margin: 0; line-height: 1.25; }
+.pm-price { display: flex; align-items: baseline; gap: 10px; }
+.pm-price .now { font-family: var(--f-display); font-size: 26px; color: var(--text-hi); }
+.pm-price .old { font-size: 14px; color: var(--text-low); text-decoration: line-through; }
+
+/* Tableau des caractéristiques : une ligne par champ documenté. */
+.pm-tbl { display: grid; grid-template-columns: auto 1fr; gap: 7px 18px; font-size: 13px; }
+.pm-tbl dt { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-low); align-self: center; }
+.pm-tbl dd { margin: 0; color: var(--text-hi); }
+.pm-tbl dd.unknown { color: var(--text-low); font-style: italic; }
+
+.pm-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.pm-chips span {
+  font-size: 11.5px; color: var(--text-mid); background: var(--bg-elev-2);
+  border: 1px solid var(--glass-border); border-radius: 100px; padding: 5px 11px;
+}
+.pm-add { margin-top: 4px; }
+
 .amodal {
   position: fixed; z-index: 80; top: 50%; left: 50%; transform: translate(-50%,-46%);
   width: min(400px, calc(100vw - 40px));

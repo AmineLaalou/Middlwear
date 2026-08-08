@@ -151,7 +151,8 @@
       ? `<img src="${photo}" alt="${p.name}" loading="lazy" />`
       : (PRODUCT_ICONS[p.icon] || "");
     return `
-      <article class="card" data-tilt="8" style="animation-delay:${Math.min(i * 38, 340)}ms">
+      <article class="card" data-tilt="8" data-id="${p.id}" tabindex="0" role="button"
+               aria-label="Voir la fiche de ${p.name}" style="animation-delay:${Math.min(i * 38, 340)}ms">
         ${badge}
         <div class="card-ic${photo ? " has-photo" : ""}">${icHTML}</div>
         <div class="card-cat">${CATS[p.category] || p.category}</div>
@@ -324,7 +325,7 @@
   });
 
   function reset() {
-    Object.assign(state, { q: "", cat: "all", icon: null, budget: BUDGET_MAX, axis: 50, axisTouched: false, sort: "smart" });
+    Object.assign(state, { q: "", cat: "all", icon: null, budget: BUDGET_MAX, axis: 50, sort: "smart" });
     $("q").value = "";
     $("sort").value = "smart";
     budgetEl.value = BUDGET_MAX;
@@ -334,6 +335,108 @@
     updateBudgetUI(); updateAxisUI(); render();
   }
   $("reset").addEventListener("click", reset);
+
+  /* ============ FICHE PRODUIT ============ */
+  /* `hw` (SPEC-UX §D) porte les caractéristiques structurées, `specs` reste le
+     texte affiché. Convention de nullité respectée telle quelle :
+       clé absente = sans objet  -> ligne masquée
+       valeur null = non détenue -> ligne "non communiqué"
+     Rien n'est deviné : un produit sans `hw` affiche simplement ses `specs`. */
+  const pmodal = $("pmodal"), povl = $("povl");
+
+  const LABELS = {
+    cpu: "Processeur", ram: "Mémoire", storage: "Stockage", screen: "Écran", gpu: "Carte graphique",
+    rangeKm: "Autonomie", speedKmh: "Vitesse max", motorW: "Moteur", weightKg: "Poids",
+    batteryH: "Batterie", flightMin: "Temps de vol", display: "Affichage"
+  };
+
+  function hwRows(hw) {
+    if (!hw) return [];
+    const rows = [];
+    const push = (key, val) => { if (key in hw) rows.push([LABELS[key] || key, val]); };
+
+    if (hw.kind === "pc") {
+      push("cpu", hw.cpu && hw.cpu.label);
+      push("ram", hw.ram && hw.ram + " Go");
+      push("storage", hw.storage && (hw.storage >= 1024 ? hw.storage / 1024 + " To" : hw.storage + " Go")
+        + (hw.storageType ? " " + hw.storageType : ""));
+      push("screen", hw.screen && [
+        hw.screen.size + "\"", hw.screen.res, hw.screen.hz && hw.screen.hz + " Hz"
+      ].filter(Boolean).join(" · "));
+      push("gpu", hw.gpu && (hw.gpu === "dedie" ? "Dédiée" : "Intégrée"));
+    } else {
+      ["rangeKm", "speedKmh", "motorW", "weightKg", "batteryH", "flightMin", "display"].forEach((k) => {
+        const unit = { rangeKm: " km", speedKmh: " km/h", motorW: " W", weightKg: " kg", batteryH: " h", flightMin: " min" }[k] || "";
+        push(k, hw[k] && hw[k] + unit);
+      });
+    }
+    return rows;
+  }
+
+  function sheetHTML(p) {
+    const photo = CATEGORY_PHOTOS[p.icon];
+    const visual = photo
+      ? `<img src="${photo}" alt="${p.name}" />`
+      : (PRODUCT_ICONS[p.icon] || "");
+    const rows = hwRows(p.hw);
+    const table = rows.length ? `
+      <dl class="pm-tbl">
+        ${rows.map(([k, v]) => v
+          ? `<dt>${k}</dt><dd>${v}</dd>`
+          : `<dt>${k}</dt><dd class="unknown">non communiqué</dd>`).join("")}
+      </dl>` : "";
+
+    return `
+      <div class="pm-visual">${visual}</div>
+      <div class="pm-info">
+        <span class="pm-eyebrow">${CATS[p.category] || p.category} · ${p.brand}</span>
+        <h3 id="pm-name">${p.name}</h3>
+        <div class="pm-price">
+          <span class="now">${fmt(p.price)}</span>
+          ${p.oldPrice ? `<span class="old">${fmt(p.oldPrice)}</span>` : ""}
+        </div>
+        <div class="perf-bar">
+          <div class="pt"><div class="pf" style="width:${p.perf}%"></div></div>
+          <span>PERF ${p.perf}</span>
+        </div>
+        <div class="pm-chips">${p.specs.map((s) => `<span>${s}</span>`).join("")}</div>
+        ${table}
+        <button class="add pm-add" type="button" data-add="${p.id}">${ICONS.cart}Ajouter au panier</button>
+      </div>`;
+  }
+
+  function openSheet(id) {
+    const p = BY_ID[id];
+    if (!p) return;
+    $("pm-body").innerHTML = sheetHTML(p);
+    pmodal.classList.add("on");
+    povl.classList.add("on");
+    body.classList.add("modal-open");
+    $("pm-close").focus();
+  }
+  function closeSheet() {
+    pmodal.classList.remove("on");
+    povl.classList.remove("on");
+    body.classList.remove("modal-open");
+  }
+  $("pm-close").addEventListener("click", closeSheet);
+  povl.addEventListener("click", closeSheet);
+
+  // Le bouton d'ajout de la fiche vit hors de la grille : il lui faut son propre relais.
+  $("pm-body").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-add]");
+    if (!b) return;
+    addToCart(b.dataset.add);
+    closeSheet();
+  });
+
+  grid.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const card = e.target.closest(".card");
+    if (!card) return;
+    e.preventDefault();
+    openSheet(card.dataset.id);
+  });
 
   /* ============ PANIER ============ */
   const lines = () => Object.entries(cart).filter(([, q]) => q > 0)
@@ -358,17 +461,29 @@
 
   grid.addEventListener("click", (e) => {
     const b = e.target.closest("[data-add]");
-    if (!b) return;
+    if (!b) {
+      // clic ailleurs sur la carte : on ouvre la fiche détaillée
+      const card = e.target.closest(".card");
+      if (card) openSheet(card.dataset.id);
+      return;
+    }
     const id = b.dataset.add;
-    cart[id] = (cart[id] || 0) + 1;
-    renderCart();
+    addToCart(id);
     b.classList.add("done");
     b.innerHTML = ICONS.check + "Ajouté";
     setTimeout(() => { b.classList.remove("done"); b.innerHTML = ICONS.cart + "Ajouter"; }, 1200);
+  });
+
+  // Partagé entre la grille et la fiche produit : l'ajout doit se comporter
+  // exactement pareil des deux côtés (compteur, animation, toast).
+  function addToCart(id) {
+    if (!BY_ID[id]) return;
+    cart[id] = (cart[id] || 0) + 1;
+    renderCart();
     const cc = $("cc");
     cc.classList.remove("bump"); void cc.offsetWidth; cc.classList.add("bump");
     toast(`${BY_ID[id].name} ajouté au panier`);
-  });
+  }
 
   function renderCart() {
     saveCart(); // appelé après chaque mutation du panier — point unique de persistance
@@ -613,6 +728,7 @@
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (modal.classList.contains("on")) closeCheckout();
+    else if (pmodal.classList.contains("on")) closeSheet();
     else if (drawer.classList.contains("on")) closeCart();
   });
 
