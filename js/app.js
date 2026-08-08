@@ -46,11 +46,16 @@
   };
 
   const BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+  // Une photo par TYPE d'objet, pas par référence : le catalogue est illustré
+  // par des visuels représentatifs, pas par des photos des produits eux-mêmes.
   const CATEGORY_PHOTOS = {
     laptop: "assets/photos/laptop.png",
     scooter: "assets/photos/scooter.png",
     watch: "assets/photos/watch.png",
-    glasses: "assets/photos/glasses.png"
+    glasses: "assets/photos/glasses.png",
+    tablet: "assets/photos/tablet.png",
+    band: "assets/photos/band.png",
+    earbuds: "assets/photos/earbuds.png"
   };
   const fmt = (n) => n.toLocaleString("fr-FR") + " Dh";
 
