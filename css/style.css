@@ -100,6 +100,14 @@ body.cursor-on .cursor-glow { opacity: 1; }
 }
 #intro.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+/* Canvas 3D : plein écran, derrière tout le contenu de l'intro — le logo
+   passe donc toujours devant les objets, quelle que soit leur position. */
+.intro-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+#intro .intro-stage, #intro .intro-skip { position: relative; z-index: 1; }
+
+/* Quand la scène 3D tourne, les décors CSS d'origine feraient doublon. */
+#intro.is-3d .orbit-ring, #intro.is-3d .orbit-chip { display: none; }
+
 .intro-stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 30px; perspective: 1100px; }
 
 .intro-logo-wrap { position: relative; width: 230px; height: 178px; display: grid; place-items: center; transform-style: preserve-3d; }

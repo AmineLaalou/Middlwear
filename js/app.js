@@ -13,6 +13,7 @@
   function endIntro() {
     if (introDone) return;
     introDone = true;
+    if (window.MWIntro) MWIntro.exit();
     intro.classList.add("hidden");
     body.classList.remove("intro-active");
     app.classList.add("visible");
@@ -22,7 +23,10 @@
     }, 720);
   }
   body.classList.add("intro-active");
-  const introTimer = setTimeout(endIntro, reduced ? 0 : 3100);
+  // La scène 3D allonge légèrement l'intro pour laisser les objets se placer ;
+  // si elle ne démarre pas (WebGL absent, CDN injoignable), on garde le timing court.
+  const intro3D = window.MWIntro ? MWIntro.init() : false;
+  const introTimer = setTimeout(endIntro, reduced ? 0 : (intro3D ? 3900 : 3100));
   $("skip").addEventListener("click", () => { clearTimeout(introTimer); endIntro(); });
   if (reduced) endIntro();
 
