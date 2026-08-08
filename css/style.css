@@ -961,3 +961,62 @@ footer.ftr { border-top: 1px solid rgba(255,255,255,.06); padding: 40px 0 46px; 
   transition: background .2s;
 }
 .fill-demo:hover { background: rgba(255,184,78,.26); }
+
+/* ============================================================
+   MOBILE — passe en dernier pour l'emporter sans surenchère de
+   spécificité. Le corps a overflow-x:hidden : tout ce qui déborde
+   n'est pas scrollable, il est COUPÉ. D'où la marge latérale
+   confortable et les garde-fous anti-débordement ci-dessous.
+   ============================================================ */
+@media (max-width: 700px) {
+  .wrap { padding: 0 22px; }
+
+  /* Un mot trop long (référence produit, URL) poussait le bloc hors écran. */
+  h1, h2, h3, p, .card-name, .pm-info h3, .marquee-item { overflow-wrap: anywhere; }
+
+  /* En-tête : la marque perd sa baseline, les actions ne débordent plus. */
+  .hdr-in { gap: 10px; }
+  .brand img { height: 28px; }
+  .brand-tag { display: none; }
+  .brand-word { font-size: 14px; }
+  .hdr-actions { gap: 7px; flex-shrink: 0; }
+  .acct-btn { padding: 8px 11px; font-size: 12px; }
+  #acct-label { max-width: 74px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acct-drop { width: min(260px, calc(100vw - 44px)); }
+
+  /* Hero : le titre respire au lieu d'être rogné. */
+  .hero { padding: 34px 0 26px; }
+  .hero h1 { font-size: clamp(30px, 8.5vw, 40px); }
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .hero-ctas .btn { justify-content: center; }
+  .hero-stats { gap: 16px; flex-wrap: wrap; }
+  .hstat strong { font-size: 20px; }
+  .hero-scene { max-width: 300px; }
+
+  /* Catalogue : une colonne, cartes plus aérées au doigt. */
+  .grid { grid-template-columns: 1fr; gap: 16px; }
+  .card { padding: 18px 18px 20px; }
+
+  /* Cibles tactiles : un pouce vise mal une pastille de 22 px. */
+  #axis::-webkit-slider-thumb, #budget::-webkit-slider-thumb { width: 30px; height: 30px; }
+  #axis::-moz-range-thumb, #budget::-moz-range-thumb { width: 30px; height: 30px; }
+  .axis-track-wrap, .brw { height: 34px; }
+  .add, .btn { min-height: 46px; }
+
+  /* Panneaux : plein écran, sans marge perdue. */
+  .drawer { width: 100vw; }
+  .pmodal, .amodal { width: calc(100vw - 24px); max-height: 92vh; }
+  .pm-info { padding: 22px 20px 24px; }
+  .pm-visual { padding: 24px 20px; }
+  .cpanel { padding: 18px; }
+
+  .marquee-item { font-size: 11.5px; }
+  .sect { padding: 48px 0; }
+}
+
+/* Très petits écrans : on récupère chaque pixel utile. */
+@media (max-width: 380px) {
+  .wrap { padding: 0 16px; }
+  .hero h1 { font-size: 28px; }
+  .brand-word { font-size: 13px; }
+}
