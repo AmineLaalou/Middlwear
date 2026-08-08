@@ -55,10 +55,25 @@
     icon: null,       // affine "connecte" (montre vs lunette) quand on vient d'un pick hero
     budget: BUDGET_MAX,
     axis: 50,        // 0 = économique, 100 = performance
-    axisTouched: false,
     sort: "smart"
   };
-  const cart = {};
+  /* Panier persistant — on ne garde que les ids encore présents au catalogue,
+     pour qu'un produit retiré de data.js ne réapparaisse pas comme ligne fantôme. */
+  const CART_KEY = "mw_cart";
+  const cart = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CART_KEY) || "{}");
+      return Object.fromEntries(
+        Object.entries(saved).filter(([id, q]) => BY_ID[id] && Number.isFinite(q) && q > 0)
+      );
+    } catch {
+      return {};
+    }
+  })();
+
+  function saveCart() {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch {}
+  }
 
   /* ============ AXE ÉCONOMIQUE ⇄ PERFORMANCE ============ */
   /* Le curseur ne coupe pas brutalement le catalogue : il repondère.
@@ -112,15 +127,6 @@
       const okB = p.price <= state.budget;
       return okQ && okC && okI && okB;
     });
-
-    // Aux extrémités du curseur, on écarte doucement les produits hors sujet
-    if (state.axisTouched) {
-      if (state.axis >= 85) list = list.filter((p) => p.perf >= 55);
-      else if (state.axis <= 15) {
-        const median = [...list].sort((a, b) => a.price - b.price)[Math.floor(list.length / 2)];
-        if (median) list = list.filter((p) => p.price <= median.price * 1.6);
-      }
-    }
 
     switch (state.sort) {
       case "price-asc": list.sort((a, b) => a.price - b.price); break;
@@ -274,7 +280,6 @@
   const axisEl = $("axis");
   axisEl.addEventListener("input", (e) => {
     state.axis = Number(e.target.value);
-    state.axisTouched = true;
     if (state.sort !== "smart") { state.sort = "smart"; $("sort").value = "smart"; }
     updateAxisUI();
     render();
@@ -339,6 +344,7 @@
   });
 
   function renderCart() {
+    saveCart(); // appelé après chaque mutation du panier — point unique de persistance
     const ls = lines(), n = count();
     $("cc").textContent = n;
     $("cc").style.display = n ? "grid" : "none";
