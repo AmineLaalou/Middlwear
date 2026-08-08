@@ -167,7 +167,7 @@
         <h3 class="card-name">${p.name}</h3>
         <div class="perf-bar">
           <div class="pt"><div class="pf" data-w="${p.perf}"></div></div>
-          <span>PERF ${p.perf}</span>
+          <span>RATIO QUALITÉ/PRIX ${p.perf}</span>
         </div>
         <div class="specs">${p.specs.map((s) => `<span>${s}</span>`).join("")}</div>
         <div class="card-foot">
@@ -404,7 +404,7 @@
         </div>
         <div class="perf-bar">
           <div class="pt"><div class="pf" style="width:${p.perf}%"></div></div>
-          <span>PERF ${p.perf}</span>
+          <span>RATIO QUALITÉ/PRIX ${p.perf}</span>
         </div>
         <div class="pm-chips">${p.specs.map((s) => `<span>${s}</span>`).join("")}</div>
         ${table}
