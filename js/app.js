@@ -13,7 +13,7 @@
   function endIntro() {
     if (introDone) return;
     introDone = true;
-    if (window.MWIntro) MWIntro.exit();
+    if (typeof MWIntro !== "undefined") MWIntro.exit();
     intro.classList.add("hidden");
     body.classList.remove("intro-active");
     app.classList.add("visible");
@@ -25,7 +25,9 @@
   body.classList.add("intro-active");
   // La scène 3D allonge légèrement l'intro pour laisser les objets se placer ;
   // si elle ne démarre pas (WebGL absent, CDN injoignable), on garde le timing court.
-  const intro3D = window.MWIntro ? MWIntro.init() : false;
+  // `const MWIntro = …` déclare une globale sans la poser sur window : c'est
+  // typeof qu'il faut tester ici, pas window.MWIntro (toujours undefined).
+  const intro3D = typeof MWIntro !== "undefined" ? MWIntro.init() : false;
   const introTimer = setTimeout(endIntro, reduced ? 0 : (intro3D ? 3900 : 3100));
   $("skip").addEventListener("click", () => { clearTimeout(introTimer); endIntro(); });
   if (reduced) endIntro();
@@ -784,4 +786,5 @@
   MWVisuals.initCursor();
   MWVisuals.bindTilt();
   MWVisuals.initHero();
+  if (typeof MWMotion !== "undefined") MWMotion.init();
 })();
