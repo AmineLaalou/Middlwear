@@ -88,12 +88,28 @@ const MWAuth = (() => {
 
   function maybeAutoPrompt(skip) {
     if (skip || currentUser || sessionStorage.getItem(AUTO_PROMPT_KEY)) return;
-    setTimeout(() => {
-      if (currentUser || amodal().classList.contains("on") || document.body.classList.contains("modal-open")) return;
+
+    // Un pointeur maintenu = geste en cours (glissement du curseur de tri, du budget,
+    // sélection de texte). Ouvrir la modale à cet instant volerait le geste — on
+    // repousse jusqu'à ce que la main soit libre au lieu de consommer l'unique essai.
+    let pointerHeld = false;
+    const hold = () => { pointerHeld = true; };
+    const release = () => { pointerHeld = false; };
+    addEventListener("pointerdown", hold, true);
+    addEventListener("pointerup", release, true);
+    addEventListener("pointercancel", release, true);
+
+    function tryOpen() {
+      if (currentUser || sessionStorage.getItem(AUTO_PROMPT_KEY)) return;
+      if (pointerHeld || amodal().classList.contains("on") || document.body.classList.contains("modal-open")) {
+        setTimeout(tryOpen, 1500);
+        return;
+      }
       sessionStorage.setItem(AUTO_PROMPT_KEY, "1");
       setMode("login");
       openModal();
-    }, AUTO_PROMPT_DELAY_MS);
+    }
+    setTimeout(tryOpen, AUTO_PROMPT_DELAY_MS);
   }
 
   async function refreshSocialButtons() {

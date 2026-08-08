@@ -166,6 +166,7 @@
   }
 
   const grid = $("grid");
+  const cardEls = new Map(); // id produit -> carte réutilisée d'un rendu à l'autre
 
   function render() {
     const res = compute();
@@ -183,10 +184,32 @@
       return;
     }
 
-    grid.innerHTML = res.map(cardHTML).join("");
+    // On réordonne des éléments réutilisés au lieu de reconstruire le HTML : un
+    // glissement de curseur déclenche des dizaines de rendus, et tout rebâtir
+    // redécoderait les images et relancerait les 37 animations à chaque pixel,
+    // au point de rendre le curseur impossible à faire glisser.
+    const fresh = [];
+    const frag = document.createDocumentFragment();
+    res.forEach((p, i) => {
+      let el = cardEls.get(p.id);
+      if (!el) {
+        const holder = document.createElement("div");
+        holder.innerHTML = cardHTML(p, i);
+        el = holder.firstElementChild;
+        cardEls.set(p.id, el);
+        fresh.push(el);
+      }
+      frag.appendChild(el);
+    });
+    grid.replaceChildren(frag);
+
+    if (!fresh.length) return;
     requestAnimationFrame(() => {
-      grid.querySelectorAll(".card").forEach((c) => c.classList.add("in"));
-      grid.querySelectorAll(".pf").forEach((b) => { b.style.width = b.dataset.w + "%"; });
+      fresh.forEach((c) => {
+        c.classList.add("in");
+        const bar = c.querySelector(".pf");
+        if (bar) bar.style.width = bar.dataset.w + "%";
+      });
       MWVisuals.bindTilt(grid);
     });
   }
