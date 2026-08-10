@@ -32,6 +32,35 @@ const MWIntro = (() => {
     };
   }
 
+  const ELLIPSE = .62;   // l'anneau est aplati : y = sin(a) * R * ELLIPSE
+  const OBJ_HALF = 1;    // demi-encombrement d'un objet, marge de sécurité incluse
+
+  function ringRadius() {
+    const vp = viewport();
+    return vp.w < vp.h ? 2.35 : 4.15; // en portrait l'anneau se resserre
+  }
+
+  // Le champ de vision d'une PerspectiveCamera est VERTICAL : en portrait la
+  // largeur visible s'effondre (largeur = hauteur × ratio). Avec une distance
+  // fixe, les objets latéraux sortaient du cadre et le reste paraissait
+  // beaucoup trop gros. On recule donc la caméra juste ce qu'il faut.
+  function fitCamera() {
+    const vp = viewport();
+    const aspect = vp.w / vp.h;
+    const R = ringRadius();
+    const tan = Math.tan((camera.fov * Math.PI / 180) / 2);
+    const distLargeur = (R + OBJ_HALF) / (tan * aspect);
+    const distHauteur = (R * ELLIPSE + OBJ_HALF) / tan;
+    const d = Math.min(30, Math.max(9.4, distLargeur, distHauteur));
+
+    camera.aspect = aspect;
+    camera.position.z = d;
+    camera.updateProjectionMatrix();
+    scene.fog.near = d - 7;
+    scene.fog.far = d + 16;
+    renderer.setSize(vp.w, vp.h);
+  }
+
   function usable() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
     if (typeof THREE === "undefined" || typeof gsap === "undefined") return false;
@@ -183,17 +212,19 @@ const MWIntro = (() => {
 
     // Anneau d'objets autour du logo : rayon large pour dégager le centre.
     const makers = [laptop, watch, drone, scooter, earbuds, vr];
-    const R = mobile ? 3.15 : 4.15;
+    const R = ringRadius();
     makers.forEach((make, i) => {
       const o = make();
       const a = (i / makers.length) * Math.PI * 2 - Math.PI / 2;
-      o.userData.home = new THREE.Vector3(Math.cos(a) * R, Math.sin(a) * R * .62, -1.2 + (i % 3) * .9);
+      o.userData.home = new THREE.Vector3(Math.cos(a) * R, Math.sin(a) * R * ELLIPSE, -1.2 + (i % 3) * .9);
       o.userData.drift = .5 + Math.random() * .5;
       o.userData.tilt = (Math.random() - .5) * .7;
-      o.scale.setScalar(mobile ? .72 : .92);
+      o.scale.setScalar(mobile ? .8 : .92);
       orbit.add(o);
       pieces.push(o);
     });
+
+    fitCamera();
   }
 
   /* ---------- Chorégraphie d'entrée ---------- */
@@ -250,10 +281,7 @@ const MWIntro = (() => {
   }
   function onResize() {
     if (!alive) return;
-    const vp = viewport();
-    camera.aspect = vp.w / vp.h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(vp.w, vp.h);
+    fitCamera();
   }
 
   /* ---------- API ---------- */
@@ -279,8 +307,10 @@ const MWIntro = (() => {
   // ce qui enchaîne sur le site au lieu de simplement disparaître.
   function exit() {
     if (!alive) return;
+    // dépasser la caméra, où qu'elle soit : elle recule sur les écrans étroits
+    const passe = camera.position.z + 2;
     pieces.forEach((o, i) => {
-      gsap.to(o.position, { z: 11, duration: .72, ease: "power2.in", delay: i * .02 });
+      gsap.to(o.position, { z: passe, duration: .72, ease: "power2.in", delay: i * .02 });
       gsap.to(o.scale, { x: o.scale.x * 2.4, y: o.scale.y * 2.4, z: o.scale.z * 2.4, duration: .72, ease: "power2.in", delay: i * .02 });
     });
     setTimeout(destroy, 820);
