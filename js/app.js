@@ -784,11 +784,16 @@
     const input = $("bg-input"), res = $("bg-res"), quick = $("bg-quick");
     if (!input || !res) return;
 
+    // Deux critères à concilier, et aucun ne suffit seul : la meilleure note
+    // proposait une tablette à 890 Dh pour un budget de 2 500, tandis que le
+    // simple remplissage du budget sortait à 9 000 Dh l'article le moins bien
+    // noté du catalogue. On les pondère donc : une bonne affaire qui exploite
+    // l'enveloppe l'emporte sur une bonne affaire qui la gaspille.
     function meilleurPour(budget) {
       const dans = PRODUCTS.filter((p) => p.price <= budget);
       if (!dans.length) return null;
-      // à note égale, on privilégie ce qui utilise le mieux le budget
-      return dans.sort((a, b) => (b.perf - a.perf) || (b.price - a.price))[0];
+      const score = (p) => p.perf * (.35 + .65 * (p.price / budget));
+      return dans.sort((a, b) => (score(b) - score(a)) || (b.price - a.price))[0];
     }
 
     function rendre() {
