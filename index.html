@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=202608101059" />
+<link rel="stylesheet" href="css/style.css?v=202608101104" />
 </head>
 <body>
 
@@ -32,7 +32,7 @@
       <div class="sweep"></div>
       <img class="intro-logo" src="assets/logo-full.png" alt="Middlwear" />
     </div>
-    <p class="intro-tagline">TRAQUÉE PARTOUT · LIVRÉE AU MAROC</p>
+    <p class="intro-tagline">ON A CHERCHÉ PARTOUT · VOUS PAYEZ MOINS</p>
   </div>
   <button id="skip" class="intro-skip" type="button">Passer →</button>
 </div>
@@ -74,8 +74,8 @@
     <div class="hero-grid">
       <div>
         <span class="eyebrow"><span id="i-spark"></span>Ordinateurs · Connecté · Gadgets · Mobilité</span>
-        <h1>Désolé,<br /><span class="grad">on casse les prix.</span></h1>
-        <p class="lede">Middlwear est une entreprise marocaine qui paye ses taxes et réussit quand même à vous sortir les meilleurs prix. Composez, choisissez, puis comparez — ensuite on s'occupe de la livraison partout au Maroc (y)</p>
+        <h1>La tech,<br /><span class="grad">sans la marge.</span></h1>
+        <p class="lede">Entreprise marocaine : on paye nos taxes et on vous sort quand même les meilleurs prix. Composez, choisissez, comparez — la livraison partout au Maroc, c'est notre affaire (y)</p>
         <div class="hero-ctas">
           <a href="#shop" class="btn btn-primary"><span id="i-bolt"></span>Explorer le catalogue</a>
           <a href="#about" class="btn btn-ghost">Notre méthode</a>
@@ -139,7 +139,7 @@
       <div class="tilt reveal d2" data-tilt="10">
         <div class="about-ic" id="i-shield"></div>
         <h3>Meilleure affaire & livraison</h3>
-        <p>Le prix reflète la meilleure offre dénichée dans le monde, pas un simple alignement local. Livraison dans tout le Maroc, paiement sécurisé, et un indice de performance affiché sur chaque produit.</p>
+        <p>Le prix reflète la meilleure offre dénichée dans le monde, pas un simple alignement local. Livraison dans tout le Maroc, paiement sécurisé, et un ratio qualité/prix affiché sur chaque produit.</p>
       </div>
     </div>
   </section>
@@ -384,8 +384,8 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/SplitText.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
-<script src="js/icons.js?v=202608101059"></script>
-<script src="js/data.js?v=202608101059"></script>
+<script src="js/icons.js?v=202608101104"></script>
+<script src="js/data.js?v=202608101104"></script>
 <script>
   // injection des icônes
   document.querySelectorAll(".orbit-chip[data-ic]").forEach((el) => { el.innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
@@ -409,10 +409,10 @@
   const html = MARQ.map(([ic, txt]) => `<span class="marquee-item">${ICONS[ic] || ""}${txt}</span>`).join("");
   track.innerHTML = html + html;
 </script>
-<script src="js/visuals.js?v=202608101059"></script>
-<script src="js/motion.js?v=202608101059"></script>
-<script src="js/intro.js?v=202608101059"></script>
-<script src="js/auth.js?v=202608101059"></script>
-<script src="js/app.js?v=202608101059"></script>
+<script src="js/visuals.js?v=202608101104"></script>
+<script src="js/motion.js?v=202608101104"></script>
+<script src="js/intro.js?v=202608101104"></script>
+<script src="js/auth.js?v=202608101104"></script>
+<script src="js/app.js?v=202608101104"></script>
 </body>
 </html>
