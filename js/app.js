@@ -6,6 +6,11 @@
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ============ INTRO ============ */
+  // Au rechargement, le navigateur restaure la position de défilement. Comme
+  // l'intro masque la page pendant ~4 s, on la découvrait déjà défilée en plein
+  // milieu. On reprend la main sur cette restauration.
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
   const intro = $("intro");
   const app = $("app");
   let introDone = false;
@@ -17,6 +22,13 @@
     intro.classList.add("hidden");
     body.classList.remove("intro-active");
     app.classList.add("visible");
+
+    // On découvre toujours le site par le haut, jamais au milieu.
+    // Lenis tient sa propre position : la remettre à zéro ne suffit pas côté window.
+    window.scrollTo(0, 0);
+    if (typeof MWMotion !== "undefined" && MWMotion.lenis) {
+      MWMotion.lenis.scrollTo(0, { immediate: true });
+    }
     setTimeout(() => {
       intro.remove();
       MWVisuals.initReveal();
@@ -762,6 +774,75 @@
   window.addEventListener("scroll", () => {
     hdr.classList.toggle("scrolled", window.scrollY > 40);
   }, { passive: true });
+
+  /* ============ SÉLECTEUR DE BUDGET (hero) ============ */
+  /* Un acheteur de reconditionné part de son budget, pas d'un modèle. On lui
+     rend donc la meilleure affaire atteignable — la note qualité/prix la plus
+     haute dans son enveloppe — et surtout l'économie réalisée, qui est
+     l'argument central du reconditionné. */
+  (() => {
+    const input = $("bg-input"), res = $("bg-res"), quick = $("bg-quick");
+    if (!input || !res) return;
+
+    function meilleurPour(budget) {
+      const dans = PRODUCTS.filter((p) => p.price <= budget);
+      if (!dans.length) return null;
+      // à note égale, on privilégie ce qui utilise le mieux le budget
+      return dans.sort((a, b) => (b.perf - a.perf) || (b.price - a.price))[0];
+    }
+
+    function rendre() {
+      const budget = Math.max(0, Number(input.value) || 0);
+      const p = meilleurPour(budget);
+
+      if (!p) {
+        const mini = Math.min(...PRODUCTS.map((x) => x.price));
+        res.innerHTML = `<p class="bg-vide">Rien en dessous de ${fmt(mini)} pour l'instant —
+          essayez un peu plus haut.</p>`;
+        return;
+      }
+
+      const eco = p.oldPrice ? p.oldPrice - p.price : 0;
+      res.innerHTML = `
+        <article class="bg-card" data-id="${p.id}">
+          <div class="bg-top">
+            <span class="bg-cat">${CATS[p.category] || p.category}</span>
+            <span class="bg-note">${p.perf}<i>/100</i></span>
+          </div>
+          <h3>${p.name}</h3>
+          <p class="bg-specs">${p.specs.join(" · ")}</p>
+          <div class="bg-prix">
+            <strong>${fmt(p.price)}</strong>
+            ${p.oldPrice ? `<s>${fmt(p.oldPrice)}</s>` : ""}
+          </div>
+          ${eco > 0 ? `<p class="bg-eco">Vous économisez <strong>${fmt(eco)}</strong> sur le neuf</p>` : ""}
+          ${p.condition ? `<p class="bg-gar">${p.condition === "reconditionne" ? "Reconditionné" : "Neuf"} · garanti ${p.warranty} mois</p>` : ""}
+          <button type="button" class="btn btn-primary bg-cta" data-see="${p.id}">Voir cette offre</button>
+        </article>`;
+
+      if (typeof gsap !== "undefined" && !reduced) {
+        gsap.from(res.querySelector(".bg-card"), { y: 12, opacity: 0, duration: .38, ease: "power3.out" });
+      }
+    }
+
+    let deb;
+    input.addEventListener("input", () => { clearTimeout(deb); deb = setTimeout(rendre, 180); });
+
+    quick.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-b]");
+      if (!b) return;
+      input.value = b.dataset.b;
+      quick.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+      rendre();
+    });
+
+    res.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-see]");
+      if (b) openSheet(b.dataset.see);
+    });
+
+    rendre();
+  })();
 
   /* ============ RETOUR STRIPE ============ */
   // Après paiement, Stripe redirige vers "/?stripe=success&session_id=..." (ou stripe=cancel).

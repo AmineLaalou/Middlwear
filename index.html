@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=202608101312" />
+<link rel="stylesheet" href="css/style.css?v=202608101429" />
 </head>
 <body>
 
@@ -75,7 +75,25 @@
       <div>
         <span class="eyebrow"><span id="i-spark"></span>Ordinateurs · Connecté · Gadgets · Mobilité</span>
         <h1>La tech,<br /><span class="grad">sans la marge.</span></h1>
-        <p class="lede">Entreprise marocaine : on paye nos taxes et on vous sort quand même les meilleurs prix. Composez, choisissez, comparez — la livraison partout au Maroc, c'est notre affaire (y)</p>
+        <p class="lede">Du matériel reconditionné, vérifié et <strong>garanti 6 mois</strong> — là où la plupart s'arrêtent à trois. Dites-nous votre budget, on vous dit ce que vous repartez avec.</p>
+
+        <div class="budgeteur" id="budgeteur">
+          <div class="bg-head">
+            <label for="bg-input">Mon budget</label>
+            <div class="bg-field">
+              <input type="number" id="bg-input" value="2500" min="300" max="20000" step="100"
+                     inputmode="numeric" aria-describedby="bg-res" />
+              <span>Dh</span>
+            </div>
+          </div>
+          <div class="bg-quick" id="bg-quick">
+            <button type="button" data-b="1000">1 000</button>
+            <button type="button" data-b="2000">2 000</button>
+            <button type="button" data-b="3500">3 500</button>
+            <button type="button" data-b="6000">6 000</button>
+          </div>
+          <div class="bg-res" id="bg-res" aria-live="polite"></div>
+        </div>
         <div class="hero-ctas">
           <a href="#shop" class="btn btn-primary"><span id="i-bolt"></span>Explorer le catalogue</a>
           <a href="#about" class="btn btn-ghost">Notre méthode</a>
@@ -384,8 +402,8 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/SplitText.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
-<script src="js/icons.js?v=202608101312"></script>
-<script src="js/data.js?v=202608101312"></script>
+<script src="js/icons.js?v=202608101429"></script>
+<script src="js/data.js?v=202608101429"></script>
 <script>
   // injection des icônes
   document.querySelectorAll(".orbit-chip[data-ic]").forEach((el) => { el.innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
@@ -409,10 +427,10 @@
   const html = MARQ.map(([ic, txt]) => `<span class="marquee-item">${ICONS[ic] || ""}${txt}</span>`).join("");
   track.innerHTML = html + html;
 </script>
-<script src="js/visuals.js?v=202608101312"></script>
-<script src="js/motion.js?v=202608101312"></script>
-<script src="js/intro.js?v=202608101312"></script>
-<script src="js/auth.js?v=202608101312"></script>
-<script src="js/app.js?v=202608101312"></script>
+<script src="js/visuals.js?v=202608101429"></script>
+<script src="js/motion.js?v=202608101429"></script>
+<script src="js/intro.js?v=202608101429"></script>
+<script src="js/auth.js?v=202608101429"></script>
+<script src="js/app.js?v=202608101429"></script>
 </body>
 </html>

@@ -1033,3 +1033,65 @@ footer.ftr { border-top: 1px solid rgba(255,255,255,.06); padding: 40px 0 46px; 
 .cond.recond strong { color: var(--teal); background: rgba(34,240,196,.11); border: 1px solid rgba(34,240,196,.34); }
 .cond.neuf strong { color: var(--violet); background: rgba(139,124,255,.11); border: 1px solid rgba(139,124,255,.34); }
 .cond span { color: var(--text-low); }
+
+/* ============================================================
+   SÉLECTEUR DE BUDGET (hero)
+   ============================================================ */
+.budgeteur {
+  margin: 22px 0 26px; padding: 18px 20px 20px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg); backdrop-filter: blur(10px);
+  max-width: 440px;
+}
+.bg-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.bg-head label {
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-low);
+}
+.bg-field { display: flex; align-items: baseline; gap: 6px; }
+.bg-field input {
+  width: 118px; background: var(--bg-elev-2); border: 1px solid var(--glass-border);
+  border-radius: 10px; color: var(--text-hi); font-family: var(--f-display);
+  font-size: 21px; font-weight: 600; padding: 7px 11px; text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.bg-field input:focus { outline: none; border-color: var(--teal); }
+.bg-field span { font-family: var(--f-mono); font-size: 13px; color: var(--text-mid); }
+
+.bg-quick { display: flex; gap: 7px; flex-wrap: wrap; margin: 13px 0 4px; }
+.bg-quick button {
+  background: none; border: 1px solid var(--glass-border); color: var(--text-mid);
+  font-family: var(--f-mono); font-size: 11.5px; padding: 6px 12px; border-radius: 100px;
+  cursor: pointer; transition: border-color .2s, color .2s, background .2s;
+}
+.bg-quick button:hover, .bg-quick button.on {
+  border-color: var(--teal); color: var(--teal); background: rgba(34,240,196,.09);
+}
+
+.bg-card { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border); }
+.bg-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bg-cat {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-low);
+}
+.bg-note {
+  font-family: var(--f-display); font-size: 19px; font-weight: 600;
+  background: linear-gradient(100deg, var(--teal), var(--violet));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.bg-note i { font-size: 11px; font-style: normal; color: var(--text-low); -webkit-text-fill-color: var(--text-low); }
+.bg-card h3 { font-family: var(--f-display); font-size: 18px; margin: 6px 0 5px; }
+.bg-specs { font-size: 12.5px; color: var(--text-mid); margin: 0 0 11px; line-height: 1.5; }
+.bg-prix { display: flex; align-items: baseline; gap: 10px; }
+.bg-prix strong { font-family: var(--f-display); font-size: 23px; color: var(--text-hi); }
+.bg-prix s { font-size: 13px; color: var(--text-low); }
+.bg-eco { font-size: 13px; color: var(--teal); margin: 7px 0 0; }
+.bg-eco strong { font-weight: 600; }
+.bg-gar { font-family: var(--f-mono); font-size: 11px; color: var(--text-low); margin: 4px 0 0; }
+.bg-cta { margin-top: 14px; width: 100%; justify-content: center; }
+.bg-vide { font-size: 13px; color: var(--text-mid); margin: 14px 0 0; }
+
+@media (max-width: 700px) {
+  .budgeteur { max-width: none; padding: 16px; }
+  .bg-field input { width: 104px; font-size: 19px; }
+}
