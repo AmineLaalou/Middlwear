@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=202608101222" />
+<link rel="stylesheet" href="css/style.css?v=202608101312" />
 </head>
 <body>
 
@@ -148,7 +148,7 @@
   <section class="sect wrap" id="shop" style="padding-top:20px">
     <div class="sect-head reveal">
       <h2>Trouvez votre équilibre.</h2>
-      <p>Cherchez librement, puis déplacez le curseur : à gauche on privilégie votre budget, à droite la performance pure. Le classement s'adapte en direct.</p>
+      <p>Cherchez librement, puis déplacez le curseur : à gauche on privilégie votre budget, à droite la puissance. Le ratio qualité/prix affiché sur chaque article compare les offres au sein de sa catégorie — 100 signale la meilleure affaire du rayon.</p>
     </div>
 
     <div class="panel reveal">
@@ -384,8 +384,8 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/SplitText.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
-<script src="js/icons.js?v=202608101222"></script>
-<script src="js/data.js?v=202608101222"></script>
+<script src="js/icons.js?v=202608101312"></script>
+<script src="js/data.js?v=202608101312"></script>
 <script>
   // injection des icônes
   document.querySelectorAll(".orbit-chip[data-ic]").forEach((el) => { el.innerHTML = PRODUCT_ICONS[el.dataset.ic] || ""; });
@@ -409,10 +409,10 @@
   const html = MARQ.map(([ic, txt]) => `<span class="marquee-item">${ICONS[ic] || ""}${txt}</span>`).join("");
   track.innerHTML = html + html;
 </script>
-<script src="js/visuals.js?v=202608101222"></script>
-<script src="js/motion.js?v=202608101222"></script>
-<script src="js/intro.js?v=202608101222"></script>
-<script src="js/auth.js?v=202608101222"></script>
-<script src="js/app.js?v=202608101222"></script>
+<script src="js/visuals.js?v=202608101312"></script>
+<script src="js/motion.js?v=202608101312"></script>
+<script src="js/intro.js?v=202608101312"></script>
+<script src="js/auth.js?v=202608101312"></script>
+<script src="js/app.js?v=202608101312"></script>
 </body>
 </html>

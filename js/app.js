@@ -153,6 +153,18 @@
   }
 
   /* ============ RENDU GRILLE ============ */
+  // L'état et la garantie sont un argument de vente, pas une mention légale :
+  // 6 mois sur le reconditionné nous place au-dessus des 3 mois pratiqués par
+  // plusieurs concurrents marocains. On l'affiche donc dès la carte.
+  function conditionHTML(p) {
+    if (!p.condition) return "";
+    const recond = p.condition === "reconditionne";
+    return `<div class="cond ${recond ? "recond" : "neuf"}">
+      <strong>${recond ? "Reconditionné" : "Neuf"}</strong>
+      <span>garantie ${p.warranty} mois</span>
+    </div>`;
+  }
+
   function cardHTML(p, i) {
     const badge = p.badge
       ? `<span class="badge ${p.badge.toLowerCase().replace(/\s+/g, "-").replace("é", "e")}">${p.badge}</span>` : "";
@@ -174,6 +186,7 @@
           <span>RATIO QUALITÉ/PRIX ${p.perf}</span>
         </div>
         <div class="specs">${p.specs.map((s) => `<span>${s}</span>`).join("")}</div>
+        ${conditionHTML(p)}
         <div class="card-foot">
           <div class="pblock"><span class="pnow">${fmt(p.price)}</span>${old}</div>
           <button class="add" type="button" data-add="${p.id}">${ICONS.cart}Ajouter</button>
@@ -411,6 +424,7 @@
           <span>RATIO QUALITÉ/PRIX ${p.perf}</span>
         </div>
         <div class="pm-chips">${p.specs.map((s) => `<span>${s}</span>`).join("")}</div>
+        ${conditionHTML(p)}
         ${table}
         <button class="add pm-add" type="button" data-add="${p.id}">${ICONS.cart}Ajouter au panier</button>
       </div>`;
