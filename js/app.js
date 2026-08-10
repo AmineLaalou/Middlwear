@@ -55,7 +55,11 @@
     glasses: "assets/photos/glasses.png",
     tablet: "assets/photos/tablet.png",
     band: "assets/photos/band.png",
-    earbuds: "assets/photos/earbuds.png"
+    earbuds: "assets/photos/earbuds.png",
+    ring: "assets/photos/ring.png",
+    speaker: "assets/photos/speaker.jpg",
+    drone: "assets/photos/drone.jpg",
+    vr: "assets/photos/vr.jpg"
   };
   const fmt = (n) => n.toLocaleString("fr-FR") + " Dh";
 

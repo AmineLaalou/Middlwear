@@ -21,6 +21,17 @@ et détourage (fond transparent) pour watch.png / glasses.png via rembg
 - **earbuds.png** — d'après [File:In-ears-earphones.png](https://commons.wikimedia.org/wiki/File:In-ears-earphones.png)
   par Ballerinus, licence CC BY-SA 3.0. Fond blanc détouré.
 
+## Ajouts (Unsplash + Commons)
+
+- **ring.png** — d'après [File:Neyya_smart_ring.jpg](https://commons.wikimedia.org/wiki/File:Neyya_smart_ring.jpg)
+  par designmilk, licence CC BY-SA 2.0. Fond blanc détouré.
+- **speaker.jpg** — [Unsplash](https://unsplash.com/photos/1507878566509), licence Unsplash
+  (usage commercial libre, attribution non requise). Recadrage carré. **Aucun logo visible.**
+- **drone.jpg** — [Unsplash](https://unsplash.com/photos/1521405924368), licence Unsplash.
+  Recadrage carré. Quadricoptère DJI Phantom, marque lisible sur le fuselage.
+- **vr.jpg** — [Unsplash](https://unsplash.com/photos/1622979135225), licence Unsplash.
+  Recadrage carré. Casque Meta Quest, mention « oculus » lisible.
+
 ## ⚠️ Ces photos illustrent un TYPE de produit, pas la référence vendue
 
 Chaque visuel est associé à une **famille d'objets** (`icon` dans `js/data.js`),
@@ -37,11 +48,14 @@ problème de droit des marques.
 
 ## Types encore sans photo (repli sur l'icône SVG)
 
-`desktop`, `ring`, `speaker`, `drone`, `vr`. Recherche faite sur Commons :
-aucun visuel exploitable trouvé — les catégories « drone » ne contiennent que
-des vues *prises depuis* un drone, « bague connectée » ramène des bijoux de
-musée, et « casque VR » des tableaux comparatifs. Le repli sur l'icône SVG
-reste plus propre qu'une photo hors sujet.
+`desktop`. Recherche refaite sur Wikimedia Commons (recherche plein texte *et*
+parcours de `Category:Computer cases`) puis sur Unsplash : les résultats sont
+soit des tours poussiéreuses posées au sol, soit des montages ouverts avec les
+composants et les vis apparents. Rien qui ressemble à un produit en vente. Le
+repli sur l'icône SVG reste plus propre qu'une photo hors sujet.
+
+Les catégories `ring`, `speaker`, `drone` et `vr`, précédemment sans visuel,
+sont désormais couvertes (voir ci-dessus).
 
 Les fichiers originaux (non recadrés, plusieurs Mo chacun) ne sont pas
 conservés dans ce dossier pour garder le dépôt léger — ils restent
