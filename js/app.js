@@ -450,8 +450,22 @@
     povl.classList.add("on");
     body.classList.add("modal-open");
     $("pm-close").focus();
+
+    // L'objet 3D remplace la photo quand la famille est modélisée. S'il ne
+    // démarre pas (WebGL absent, forme inconnue), la photo reste en place :
+    // la fiche n'est jamais dégradée.
+    const visuel = pmodal.querySelector(".pm-visual");
+    if (visuel && typeof Produit3D !== "undefined" && Produit3D.connait(p.icon)) {
+      visuel.classList.add("p3d");
+      if (Produit3D.monter(visuel, p.icon)) {
+        visuel.insertAdjacentHTML("beforeend", '<span class="p3d-aide">Fais glisser pour tourner</span>');
+      } else {
+        visuel.classList.remove("p3d");
+      }
+    }
   }
   function closeSheet() {
+    if (typeof Produit3D !== "undefined") Produit3D.demonter();
     pmodal.classList.remove("on");
     povl.classList.remove("on");
     body.classList.remove("modal-open");

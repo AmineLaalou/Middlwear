@@ -332,5 +332,8 @@ const MWIntro = (() => {
     pieces = [];
   }
 
-  return { init, exit };
+  // Les six formes servent aussi aux fiches produit (js/produit3d.js) : on les
+  // expose plutôt que de les réécrire, pour qu'un objet ne puisse jamais
+  // diverger entre l'intro et la boutique.
+  return { init, exit, formes: { laptop, watch, drone, scooter, earbuds, vr }, metal, glow, edges };
 })();
